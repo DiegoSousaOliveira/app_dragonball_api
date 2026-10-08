@@ -21,6 +21,7 @@ Rotas:
   GET  /chat?depois=<id>&versao=<v>   mensagens novas do chat
   POST /chat                     {"texto"}   (403 se o chat estiver fechado ou o aluno bloqueado)
   GET|POST /esferas/...          Caca as Esferas (tudo em servidor/rotas_esferas.py)
+  GET|POST /conquista/...        Conquista de Territorios (servidor/rotas_conquista.py; lutas "cq-" em /turma/partida/)
 O aluno se identifica pelo cabecalho X-Jogador (recebido em /turma/entrar).
 Os controles do professor (fechar o chat, bloquear, apagar) NAO tem rota: ficam so no painel.
 """
@@ -33,7 +34,7 @@ from urllib.parse import parse_qsl, urlsplit
 
 from core import api
 from servidor import espelho as esp
-from servidor import rotas_esferas
+from servidor import rotas_conquista, rotas_esferas
 from servidor.chat import Proibido
 from servidor.placar import DadoInvalido
 
@@ -126,6 +127,8 @@ def rota_partida(app, metodo, caminho, dados, jogador, host):
     partes = caminho.strip("/").split("/")          # ["turma", "partida", "<id>", "transformar"]
     id_partida = partes[2] if len(partes) > 2 else ""
     acao = partes[3] if len(partes) > 3 else ""
+    if rotas_conquista.eh_luta_da_conquista(id_partida):    # invasao da Conquista: servidor/rotas_conquista.py
+        return Resposta(*rotas_conquista.partida(app, metodo, id_partida, acao, jogador, host))
     if metodo == "GET" and not acao:
         estado = app.sala.estado_da_partida(jogador, id_partida)
         return json_resposta(esp.reescrever_imagens(estado, f"http://{host}/imagens/"))
@@ -235,6 +238,9 @@ class TratadorDragonBall(BaseHTTPRequestHandler):
             if partes.path.startswith("/esferas/"):        # Caca as Esferas: servidor/rotas_esferas.py
                 resposta = Resposta(*rotas_esferas.atender(app, metodo, partes.path, params, self.headers,
                                                            self._ler_corpo_json))
+            elif partes.path.startswith("/conquista/"):    # Conquista de Territorios: servidor/rotas_conquista.py
+                resposta = Resposta(*rotas_conquista.atender(app, metodo, partes.path, params, self.headers,
+                                                             self._ler_corpo_json))
             elif metodo == "GET":
                 resposta = rota_get(app, partes.path, params, host, jogador)
             else:

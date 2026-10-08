@@ -9,6 +9,7 @@ from core.descoberta import RespondedorDeDescoberta, ips_locais
 from core.esferas import Cacada
 from servidor import rotas_esferas
 from servidor.chat import Chat
+from servidor.conquista import Conquista
 from servidor.espelho import Espelho
 from servidor.monitor import Monitor
 from servidor.placar import PlacarDaTurma
@@ -46,6 +47,7 @@ class ServidorDragonBall:
         self.sala = Sala(self.espelho, self.placar)
         self.chat = Chat()
         self.cacada = Cacada(avisar=self.chat.mensagem_do_professor)   # desligada ate o professor iniciar
+        self.conquista = Conquista(self.espelho, avisar=self.chat.mensagem_do_professor)   # idem
         self.host = host
         self.http = abrir_porta(host, porta)
         self.http.app = self               # o tratador acha tudo por aqui (self.server.app)
