@@ -411,8 +411,8 @@ class Cacada:
                 self._inscrever(id_jogador, nome, agora)
             for cacador in self.cacadores.values():
                 if 1 not in cacador.achadas:
-                    self._achou(cacador, 1, agora)
-            self._evento("inicio", agora, minutos=minutos)
+                    self._achou(cacador, 1, agora, na_largada=True)
+            self._evento("inicio", agora, minutos=minutos, cacadores=len(self.cacadores))
             self._avisos.append("🐉 A Caça às Esferas começou! Abra a tela 🐉 Esferas do app: você já ganhou a "
                                 "1ª esfera. Faltam 6!")
 
@@ -471,10 +471,10 @@ class Cacada:
 
     # ---------------- o que os alunos fazem ----------------
 
-    def _achou(self, cacador, esfera, agora):
+    def _achou(self, cacador, esfera, agora, na_largada=False):
         cacador.achadas[esfera] = agora
         self._evento("achado", agora, nome=cacador.nome, numero=cacador.numero, esfera=esfera,
-                     conceito=ESFERAS[esfera]["conceito"])
+                     conceito=ESFERAS[esfera]["conceito"], na_largada=na_largada)
         if len(cacador.achadas) == len(ESFERAS):
             self.concluidos += 1
             cacador.posicao = self.concluidos
