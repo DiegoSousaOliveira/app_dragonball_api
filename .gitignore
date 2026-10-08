@@ -1,0 +1,18 @@
+# Ambientes virtuais do Python (cada um recria com: pip install -r requirements.txt)
+.venv/
+.venv-build/
+
+# Arquivos gerados pelo Python
+__pycache__/
+*.pyc
+
+# Saidas do build do instalador (python instalador/construir.py)
+build/
+dist/
+dist_instalador/
+*.spec
+
+# Backups
+backup_*.zip
+
+# ATENCAO: cache/imagens/ e dados/ NAO sao ignorados: o instalador precisa deles.

@@ -1,0 +1,235 @@
+------------------------------------------------------------
+1) Primeira pagina de personagens
+  URL final: https://dragonball-api.com/api/characters
+  status=200  630 ms  6197 bytes  application/json; charset=utf-8
+  Formato: dicionario com as chaves ['items', 'meta', 'links']
+  JSON: {"items": [{"id": 1, "name": "Goku", "ki": "60.000.000", "maxKi": "90 Septillion", "race": "Saiyan", "gender": "Male", "description": "El protagonista de la serie, conocido por su gran poder y personalidad amigable. Originalmente enviado a la Tierra como un infante volador con la misión de conquista...
+  meta  = {'totalItems': 58, 'itemCount': 10, 'itemsPerPage': 10, 'totalPages': 6, 'currentPage': 1}
+  links = {'first': 'https://dragonball-api.com/api/characters?limit=10', 'previous': '', 'next': 'https://dragonball-api.com/api/characters?page=2&limit=10', 'last': 'https://dragonball-api.com/api/characters?page=6&limit=10'}
+------------------------------------------------------------
+2) Pagina 2
+  URL final: https://dragonball-api.com/api/characters?page=2
+  status=200  598 ms  5361 bytes  application/json; charset=utf-8
+  Formato: dicionario com as chaves ['items', 'meta', 'links']
+  JSON: {"items": [{"id": 11, "name": "Krillin", "ki": "1.000.000", "maxKi": "1 Billion", "race": "Human", "gender": "Male", "description": "Amigo cercano de Goku y guerrero valiente, es un personaje del manga y anime de Dragon Ball. Es uno de los principales discípulos de Kame-Sen'nin, Guerrero Z, y el mej...
+------------------------------------------------------------
+3) Todos de uma vez (limit=100)
+  URL final: https://dragonball-api.com/api/characters?limit=100
+  status=200  901 ms  29209 bytes  application/json; charset=utf-8
+  Formato: dicionario com as chaves ['items', 'meta', 'links']
+  JSON: {"items": [{"id": 1, "name": "Goku", "ki": "60.000.000", "maxKi": "90 Septillion", "race": "Saiyan", "gender": "Male", "...
+  quantidade de itens: 58
+------------------------------------------------------------
+4) Filtro por raca (repare no FORMATO!)
+  URL final: https://dragonball-api.com/api/characters?race=Saiyan
+  status=200  626 ms  6393 bytes  application/json; charset=utf-8
+  Formato: LISTA PURA com 10 itens
+  JSON: [{"id": 1, "name": "Goku", "ki": "60.000.000", "maxKi": "90 Septillion", "race": "Saiyan", "gender": "Male", "descriptio...
+------------------------------------------------------------
+5) Lista de planetas
+  URL final: https://dragonball-api.com/api/planets
+  status=200  616 ms  3692 bytes  application/json; charset=utf-8
+  Formato: dicionario com as chaves ['items', 'meta', 'links']
+  JSON: {"items": [{"id": 1, "name": "Namek", "isDestroyed": true, "description": "Planeta natal de los Namekianos. Escenario de importantes batallas y la obtención de las Dragon Balls de Namek.", "image": "h...
+============================================================
+FILTRO ?name=
+  name='Goku'     status=200 -> ['Goku']
+  name='goku'     status=200 -> ['Goku']
+  name='GOKU'     status=200 -> ['Goku']
+  name='gok'      status=200 -> ['Goku']
+  name='go'       status=200 -> ['Goku', 'Gohan', 'Gotenks', 'Gogeta']
+  name='oku'      status=200 -> ['Goku']
+  name='Gokuu'    status=200 -> []
+  name='Celula'   status=200 -> ['Celula']
+  name='Célula'   status=200 -> ['Celula']
+  name='Freezer'  status=200 -> ['Freezer']
+  name='Cell'     status=200 -> []
+  name='a'        status=200 -> ['Vegeta', 'Bulma', 'Zarbon', 'Dodoria', 'Celula', 'Gohan', 'Tenshinhan', 'Yamcha', 'Master Roshi', 'Bardock', 'Launch', 'Mr. Satan', 'Android 17', 'Android 16', 'Android 19', 'Android 20 (Dr. Gero)', 'Android 13', 'Android 14', 'Android 15', 'Nail', 'Raditz', 'Babidi', 'Majin Buu', 'Marcarita ', 'Grand Priest ', 'Kaio del norte (Kaito)', 'Android 18', 'Gogeta', 'Janemba', 'Kaio del Sur', 'Kaio del este', 'Kaio del Oeste', 'Gran Kaio', 'Kaio-shin del Este', 'Kaio-shin del Norte', 'Kaio-shin del Sur', 'Kaio-shin del Oeste', 'Gran Kaio-shin']
+============================================================
+PAGINACAO: limit e page
+  {'limit': 58}: status=200 itens=58 meta={'totalItems': 58, 'itemCount': 58, 'itemsPerPage': 58, 'totalPages': 1, 'currentPage': 1}
+      links={'first': 'https://dragonball-api.com/api/characters?limit=58', 'previous': '', 'next': '', 'last': 'https://dragonball-api.com/api/characters?page=1&limit=58'}
+  {'limit': 100}: status=200 itens=58 meta={'totalItems': 58, 'itemCount': 58, 'itemsPerPage': 100, 'totalPages': 1, 'currentPage': 1}
+      links={'first': 'https://dragonball-api.com/api/characters?limit=100', 'previous': '', 'next': '', 'last': 'https://dragonball-api.com/api/characters?page=1&limit=100'}
+  {'limit': 1000}: status=200 itens=58 meta={'totalItems': 58, 'itemCount': 58, 'itemsPerPage': 100, 'totalPages': 1, 'currentPage': 1}
+      links={'first': 'https://dragonball-api.com/api/characters?limit=100', 'previous': '', 'next': '', 'last': 'https://dragonball-api.com/api/characters?page=1&limit=100'}
+  {'limit': 0}: status=200 itens=10 meta={'totalItems': 58, 'itemCount': 10, 'itemsPerPage': 10, 'totalPages': 6, 'currentPage': 1}
+      links={'first': 'https://dragonball-api.com/api/characters?limit=10', 'previous': '', 'next': 'https://dragonball-api.com/api/characters?page=2&limit=10', 'last': 'https://dragonball-api.com/api/characters?page=6&limit=10'}
+  {'limit': -1}: status=200 itens=10 meta={'totalItems': 58, 'itemCount': 10, 'itemsPerPage': 10, 'totalPages': 6, 'currentPage': 1}
+      links={'first': 'https://dragonball-api.com/api/characters?limit=10', 'previous': '', 'next': 'https://dragonball-api.com/api/characters?page=2&limit=10', 'last': 'https://dragonball-api.com/api/characters?page=6&limit=10'}
+  {'limit': 'abc'}: status=200 itens=10 meta={'totalItems': 58, 'itemCount': 10, 'itemsPerPage': 10, 'totalPages': 6, 'currentPage': 1}
+      links={'first': 'https://dragonball-api.com/api/characters?limit=10', 'previous': '', 'next': 'https://dragonball-api.com/api/characters?page=2&limit=10', 'last': 'https://dragonball-api.com/api/characters?page=6&limit=10'}
+  {'page': 6}: status=200 itens=8 meta={'totalItems': 58, 'itemCount': 8, 'itemsPerPage': 10, 'totalPages': 6, 'currentPage': 6}
+      links={'first': 'https://dragonball-api.com/api/characters?limit=10', 'previous': 'https://dragonball-api.com/api/characters?page=5&limit=10', 'next': '', 'last': 'https://dragonball-api.com/api/characters?page=6&limit=10'}
+  {'page': 7}: status=200 itens=0 meta={'totalItems': 58, 'itemCount': 0, 'itemsPerPage': 10, 'totalPages': 6, 'currentPage': 7}
+      links={'first': 'https://dragonball-api.com/api/characters?limit=10', 'previous': 'https://dragonball-api.com/api/characters?page=6&limit=10', 'next': '', 'last': 'https://dragonball-api.com/api/characters?page=6&limit=10'}
+  {'page': 0}: status=200 itens=10 meta={'totalItems': 58, 'itemCount': 10, 'itemsPerPage': 10, 'totalPages': 6, 'currentPage': 1}
+      links={'first': 'https://dragonball-api.com/api/characters?limit=10', 'previous': '', 'next': 'https://dragonball-api.com/api/characters?page=2&limit=10', 'last': 'https://dragonball-api.com/api/characters?page=6&limit=10'}
+  {'page': 2, 'limit': 20}: status=200 itens=20 meta={'totalItems': 58, 'itemCount': 20, 'itemsPerPage': 20, 'totalPages': 3, 'currentPage': 2}
+      links={'first': 'https://dragonball-api.com/api/characters?limit=20', 'previous': 'https://dragonball-api.com/api/characters?page=1&limit=20', 'next': 'https://dragonball-api.com/api/characters?page=3&limit=20', 'last': 'https://dragonball-api.com/api/characters?page=3&limit=20'}
+============================================================
+ESTRATEGIA B: seguir links.next
+  pagina 1: acumulado=10 next='https://dragonball-api.com/api/characters?page=2&limit=10'
+  pagina 2: acumulado=20 next='https://dragonball-api.com/api/characters?page=3&limit=10'
+  pagina 3: acumulado=30 next='https://dragonball-api.com/api/characters?page=4&limit=10'
+  pagina 4: acumulado=40 next='https://dragonball-api.com/api/characters?page=5&limit=10'
+  pagina 5: acumulado=50 next='https://dragonball-api.com/api/characters?page=6&limit=10'
+  pagina 6: acumulado=58 next=''
+============================================================
+DETALHE DE PERSONAGEM / PLANETA / TRANSFORMACAO
+  /characters/1 chaves: ['id', 'name', 'ki', 'maxKi', 'race', 'gender', 'description', 'image', 'affiliation', 'deletedAt', 'originPlanet', 'transformations']
+  originPlanet: {"id": 2, "name": "Tierra", "isDestroyed": false, "description": "La Tierra también llamado Mundo del Dragón (Dragon World), es el planeta principal donde se desarrolla la serie de Dragon Ball. Se encuentra en el Sistema Solar de la Vía Láctea de las Galaxias del Norte del Universo 7, lugar que supe
+  transformations: 6 itens; chaves do 1o: ['id', 'name', 'image', 'ki', 'deletedAt']
+     1 'Goku SSJ' ki='3 Billion' image=https://dragonball-api.com/transformaciones/goku_ssj.webp
+     2 'Goku SSJ2' ki='6 Billion' image=https://dragonball-api.com/transformaciones/goku_ssj2.webp
+     3 'Goku SSJ3' ki='24 Billion' image=https://dragonball-api.com/transformaciones/goku_ssj3.webp
+     4 'Goku SSJ4' ki='2 Quadrillion' image=https://dragonball-api.com/transformaciones/goku_ssj4.webp
+     5 'Goku SSJB' ki='9 Quintillion' image=https://dragonball-api.com/transformaciones/goku_ssjb.webp
+     44 'Goku Ultra Instinc' ki='90 Septillion' image=https://dragonball-api.com/transformaciones/goku_ultra.webp
+  /planets/1 chaves: ['id', 'name', 'isDestroyed', 'description', 'image', 'deletedAt', 'characters']
+  moradores: ['Piccolo', 'Ginyu', 'Dende', 'Nail']
+  chaves de um morador: ['id', 'name', 'ki', 'maxKi', 'race', 'gender', 'description', 'image', 'affiliation', 'deletedAt']
+------------------------------------------------------------
+  /transformations
+  URL final: https://dragonball-api.com/api/transformations
+  status=200  617 ms  6447 bytes  application/json; charset=utf-8
+  Formato: LISTA PURA com 43 itens
+  JSON: [{"id": 1, "name": "Goku SSJ", "image": "https://dragonball-api.com/transformaciones/goku_ssj.webp", "ki": "3 Billion", "deletedAt": null}, {"id": 2, ...
+------------------------------------------------------------
+  /transformations/1
+  URL final: https://dragonball-api.com/api/transformations/1
+  status=200  627 ms  1355 bytes  application/json; charset=utf-8
+  Formato: dicionario com as chaves ['id', 'name', 'image', 'ki', 'deletedAt', 'character']
+  JSON: {"id": 1, "name": "Goku SSJ", "image": "https://dragonball-api.com/transformaciones/goku_ssj.webp", "ki": "3 Billion", "deletedAt": null, "character": {"id": 1, "name": "Goku", "ki": "60.000.000", "ma...
+------------------------------------------------------------
+  ERRO PROPOSITAL /characters/99999
+  URL final: https://dragonball-api.com/api/characters/99999
+  status=400  617 ms  75 bytes  application/json; charset=utf-8
+  Formato: dicionario com as chaves ['message', 'error', 'statusCode']
+  JSON: {"message": "Character ID not found", "error": "Bad Request", "statusCode": 400}
+------------------------------------------------------------
+  ERRO PROPOSITAL /characters/abc
+  URL final: https://dragonball-api.com/api/characters/abc
+  status=500  587 ms  52 bytes  application/json; charset=utf-8
+  Formato: dicionario com as chaves ['statusCode', 'message']
+  JSON: {"statusCode": 500, "message": "Internal server error"}
+------------------------------------------------------------
+  ERRO PROPOSITAL /planets/999
+  URL final: https://dragonball-api.com/api/planets/999
+  status=400  615 ms  72 bytes  application/json; charset=utf-8
+  Formato: dicionario com as chaves ['message', 'error', 'statusCode']
+  JSON: {"message": "Planet ID not found", "error": "Bad Request", "statusCode": 400}
+------------------------------------------------------------
+  ERRO PROPOSITAL /transformations/999
+  URL final: https://dragonball-api.com/api/transformations/999
+  status=200  618 ms  0 bytes  ?
+  JSON: null
+------------------------------------------------------------
+  ERRO PROPOSITAL /rota-que-nao-existe
+  URL final: https://dragonball-api.com/api/rota-que-nao-existe
+  status=404  591 ms  95 bytes  application/json; charset=utf-8
+  Formato: dicionario com as chaves ['statusCode', 'message']
+  JSON: {"statusCode": 404, "message": "ENOENT: no such file or directory, stat '/app/images/index.html'"}
+============================================================
+VALORES REAIS (58 personagens)
+  race: ['Android', 'Angel', 'Evil', 'Frieza Race', 'God', 'Human', 'Jiren Race', 'Majin', 'Namekian', 'Nucleico', 'Nucleico benigno', 'Saiyan', 'Unknown']
+  affiliation: ['Army of Frieza', 'Assistant of Beerus', 'Assistant of Vermoud', 'Freelancer', 'Other', 'Pride Troopers', 'Villain', 'Z Fighter']
+  gender: ['Female', 'Male']
+  ids: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 37, 38, 39, 40, 42, 43, 44, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78]
+  deletedAt nao nulo: []
+  TODOS os ki/maxKi (para testar parse_ki):
+       1 Goku                   ki='60.000.000'           maxKi='90 Septillion'
+       2 Vegeta                 ki='54.000.000'           maxKi='19.84 Septillion'
+       3 Piccolo                ki='2.000.000'            maxKi='500.000.000'
+       4 Bulma                  ki='0'                    maxKi='0'
+       5 Freezer                ki='530.000'              maxKi='52.71 Septillion'
+       6 Zarbon                 ki='20.000'               maxKi='30.000'
+       7 Dodoria                ki='18.000'               maxKi='20.000'
+       8 Ginyu                  ki='9.000'                maxKi='25.000'
+       9 Celula                 ki='250.000.000'          maxKi='5 Billion'
+      10 Gohan                  ki='45.000.000'           maxKi='40 septillion'
+      11 Krillin                ki='1.000.000'            maxKi='1 Billion'
+      12 Tenshinhan             ki='2.400.000'            maxKi='80.000.000'
+      13 Yamcha                 ki='1.980.000'            maxKi='4.000.000'
+      14 Chi-Chi                ki='0'                    maxKi='0'
+      15 Gotenks                ki='65.600.000'           maxKi='34.8 Billion'
+      16 Trunks                 ki='50.000.000'           maxKi='37.4 septllion'
+      17 Master Roshi           ki='500.000'              maxKi='350.000.000'
+      18 Bardock                ki='450.000'              maxKi='180.000.000'
+      19 Launch                 ki='0'                    maxKi='0'
+      20 Mr. Satan              ki='450'                  maxKi='5.000'
+      21 Dende                  ki='3.200'                maxKi='3.200'
+      22 Android 17             ki='320.000.000'          maxKi='40 Quintillion'
+      23 Android 16             ki='440.000.000'          maxKi='440.000.000'
+      24 Android 19             ki='122.000.000'          maxKi='160,000,000'
+      25 Android 20 (Dr. Gero)  ki='128.000.000'          maxKi='158.100.000'
+      26 Android 13             ki='195.000.000'          maxKi='562.500.000'
+      27 Android 14             ki='192.500.000'          maxKi='192.500.000'
+      28 Android 15             ki='175.000.000'          maxKi='175.000.000'
+      29 Nail                   ki='42.000 '              maxKi='42.000'
+      30 Raditz                 ki='1.500 '               maxKi='1.500 '
+      31 Babidi                 ki='0'                    maxKi='0'
+      32 Majin Buu              ki='8 Billion'            maxKi='100 Trillion'
+      33 Bills                  ki='102 Billion'          maxKi='100 septillion'
+      34 Whis                   ki='15 septillion'        maxKi='110 septillion'
+      35 Zeno                   ki='500 Septillion'       maxKi='500 Septillion'
+      37 Kibito-Shin            ki='3.2 Billion'          maxKi='3.2 Billion'
+      38 Jiren                  ki='121 Quintillion'      maxKi='12.1 Septillion'
+      39 Toppo                  ki='99 Quadrillion'       maxKi='7.5 Sextillion'
+      40 Dyspo                  ki='50 Trillion'          maxKi='150 Quintillion'
+      42 Marcarita              ki='10 septillion'        maxKi='99.5 septillion'
+      43 Vermoudh               ki='9.9 Septillion'       maxKi='100 septillion'
+      44 Grand Priest           ki='969 Googolplex'       maxKi='969 Googolplex'
+      63 Kaio del norte (Kaito) ki='6.000'                maxKi='6.000'
+      64 Android 18             ki='280,000,000'          maxKi='300,000,000'
+      65 Gogeta                 ki='250 Billion'          maxKi='15 septillion'
+      66 Vegetto                ki='180 Billion'          maxKi='10.8 Septillion'
+      67 Janemba                ki='15 Billion'           maxKi='75 Billion'
+      68 Broly                  ki='7 quadrillion'        maxKi='11.2 Septillion'
+      69 Kaio del Sur           ki='unknown'              maxKi='unknown'
+      70 Kaio del este          ki='unknown'              maxKi='unknown'
+      71 Kaio del Oeste         ki='unknown'              maxKi='unknown'
+      72 Gran Kaio              ki='unknown'              maxKi='unknown'
+      73 Kaio-shin del Este     ki='unknown'              maxKi='unknown'
+      74 Kaio-shin del Norte    ki='unknown'              maxKi='unknown'
+      75 Kaio-shin del Sur      ki='unknown'              maxKi='unknown'
+      76 Kaio-shin del Oeste    ki='unknown'              maxKi='unknown'
+      77 Gran Kaio-shin         ki='unknown'              maxKi='unknown'
+      78 Kibito                 ki='unknown'              maxKi='unknown'
+  extensoes de imagem: ['webp']
+  nomes com acento/espaco: ['Master Roshi', 'Mr. Satan', 'Android 17', 'Android 16', 'Android 19', 'Android 20 (Dr. Gero)', 'Android 13', 'Android 14', 'Android 15', 'Majin Buu', 'Marcarita ', 'Grand Priest ', 'Kaio del norte (Kaito)', 'Android 18', 'Kaio del Sur', 'Kaio del este', 'Kaio del Oeste', 'Gran Kaio', 'Kaio-shin del Este', 'Kaio-shin del Norte', 'Kaio-shin del Sur', 'Kaio-shin del Oeste', 'Gran Kaio-shin']
+============================================================
+DETALHE DE CADA PERSONAGEM (planeta e transformacoes)
+  sem originPlanet: []
+  com transformacoes: ['Goku(6)', 'Vegeta(5)', 'Piccolo(2)', 'Freezer(4)', 'Zarbon(1)', 'Celula(3)', 'Gohan(4)', 'Gotenks(2)', 'Trunks(4)', 'Majin Buu(4)', 'Gogeta(4)', 'Vegetto(2)', 'Janemba(1)', 'Broly(1)']
+============================================================
+FILTROS NO SERVIDOR
+  {'race': 'Saiyan'}: status=200 formato=lista -> ['Goku', 'Vegeta', 'Gohan', 'Gotenks', 'Trunks', 'Bardock', 'Raditz', 'Gogeta', 'Vegetto', 'Broly']
+  {'race': 'saiyan'}: status=200 formato=lista -> ['Goku', 'Vegeta', 'Gohan', 'Gotenks', 'Trunks', 'Bardock', 'Raditz', 'Gogeta', 'Vegetto', 'Broly']
+  {'race': 'Saiyan', 'affiliation': 'Z fighter'}: status=200 formato=lista -> ['Goku', 'Vegeta', 'Gohan', 'Gotenks', 'Trunks', 'Bardock', 'Gogeta', 'Vegetto']
+  {'affiliation': 'Z Fighter'}: status=200 formato=lista -> ['Goku', 'Vegeta', 'Piccolo', 'Bulma', 'Gohan', 'Krillin', 'Tenshinhan', 'Yamcha', 'Chi-Chi', 'Gotenks', 'Trunks', 'Master Roshi', 'Bardock', 'Launch', 'Dende', 'Nail', 'Android 18', 'Gogeta', 'Vegetto']
+  {'gender': 'Female'}: status=200 formato=lista -> ['Bulma', 'Chi-Chi', 'Launch', 'Marcarita ', 'Android 18', 'Kaio del este', 'Kaio-shin del Oeste']
+  {'race': 'Inexistente'}: status=200 formato=lista -> []
+  {'race': 'Saiyan', 'page': 2}: status=200 formato=lista -> ['Goku', 'Vegeta', 'Gohan', 'Gotenks', 'Trunks', 'Bardock', 'Raditz', 'Gogeta', 'Vegetto', 'Broly']
+  {'race': 'Saiyan', 'limit': 2}: status=200 formato=lista -> ['Goku', 'Vegeta', 'Gohan', 'Gotenks', 'Trunks', 'Bardock', 'Raditz', 'Gogeta', 'Vegetto', 'Broly']
+  /planets {'isDestroyed': 'true'}: status=200 formato=lista -> ['Namek', 'Vegeta', 'Freezer No. 79', 'Kanassa']
+  /planets {'name': 'namek'}: status=200 formato=lista -> ['Namek']
+============================================================
+CABECALHOS E LIMITE DE REQUISICOES
+  Access-Control-Allow-Credentials: true
+  Alt-Svc: h3=":443"; ma=2592000
+  Cache-Control: max-age=864000
+  Content-Encoding: zstd
+  Content-Type: application/json; charset=utf-8
+  Date: Tue, 06 Oct 2026 18:57:28 GMT
+  Etag: W/"1835-FciHak4QvrvFh9uJ8zyZ8ftdJ18"
+  Vary: Accept-Encoding, Origin
+  X-Powered-By: Express
+  Transfer-Encoding: chunked
+  Disparando 40 requisicoes seguidas (com Session) para procurar 429...
+  codigos: {200: 40}  em 8.3s; cabecalhos de limite: {}
+============================================================
+REDE
+  IP de dragonball-api.com: 54.37.64.53
+  timeout=0.001 -> ConnectTimeout
+  documentacao: status=200 bytes=3653 (pagina montada por JS?)
