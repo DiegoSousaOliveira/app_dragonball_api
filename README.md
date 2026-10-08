@@ -55,7 +55,7 @@ o programa já leva tudo dentro.
 
 | Arquivo | Quando usar |
 |---|---|
-| **`DragonBallDex-Setup-2.3.1.exe`** (≈ 30 MB) | **Recomendado.** Instala com atalhos e libera o servidor no Firewall |
+| **`DragonBallDex-Setup-2.3.2.exe`** (≈ 30 MB) | **Recomendado.** Instala com atalhos e libera o servidor no Firewall |
 | **`DragonBallDex-Portatil.exe`** (≈ 34 MB) | Sem instalar: copie **só este arquivo** (pendrive, Downloads...) e dê dois cliques. Demora uns segundos a mais para abrir |
 
 ### Com o instalador
@@ -71,7 +71,7 @@ o programa já leva tudo dentro.
 | **Libera o programa no Firewall do Windows** | Senão os alunos não conseguem chegar ao servidor |
 | Cria o desinstalador (Painel de Controle → Aplicativos) | O placar e o cache ficam em `%LOCALAPPDATA%\DragonBallDex` e não são apagados |
 
-> **Sem senha de administrador?** Execute o instalador com `/CURRENTUSER` (ex.: `DragonBallDex-Setup-2.3.1.exe
+> **Sem senha de administrador?** Execute o instalador com `/CURRENTUSER` (ex.: `DragonBallDex-Setup-2.3.2.exe
 > /CURRENTUSER`): ele instala só para aquele usuário. Nos PCs dos **alunos** isso basta. No PC do **professor**, o
 > Firewall vai perguntar na primeira vez em que o servidor for aberto (pode pedir a senha de administrador): clique em
 > **Permitir acesso** e marque redes privadas **e** públicas.
@@ -374,7 +374,7 @@ python ferramentas/simular_cacada.py --conectar IP:PORTA    alunos falsos para e
 
 ```
 pip install -r requirements.txt -r requirements-dev.txt     (com um Python de python.org, não o da Microsoft Store)
-python instalador/construir.py        ->  dist_instalador\DragonBallDex-Setup-2.3.1.exe  e  DragonBallDex-Portatil.exe
+python instalador/construir.py        ->  dist_instalador\DragonBallDex-Setup-2.3.2.exe  e  DragonBallDex-Portatil.exe
 ```
 
 | Pasta | Conteúdo |
@@ -401,6 +401,7 @@ O código está em [github.com/DiegoSousaOliveira/app_dragonball_api](https://gi
 | `main` · `v2.2.0` | A versão estável (duelos, pódio, chat), **sem** a Caça às Esferas |
 | `cacada-esferas` · `v2.3.0` | A versão 2.3, **com** a Caça às Esferas (dragão desenhado) |
 | `cacada-esferas` · `v2.3.1` | Igual à 2.3.0, mas o efeito usa a figura `interface/imagens/shenlong.png` quando ela está no PC |
+| `cacada-esferas` · `v2.3.2` | A 2.3.1 + o guia **❔ Como funciona?** em todas as telas do app do aluno |
 
 ```
 git checkout main              volta para a versão estável (2.2)
