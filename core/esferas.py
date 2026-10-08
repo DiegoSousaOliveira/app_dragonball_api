@@ -380,6 +380,11 @@ class Cacada:
         if self.estado != "ativa":
             raise CacadaParada(MENSAGENS_PARADA[self.estado])
 
+    def exigir_ativa(self):
+        """CacadaParada (409) se a cacada nao comecou, esta pausada ou terminou."""
+        with self._mexendo():
+            self._exigir_ativa()
+
     def _cacador_pelo_numero(self, numero):
         cacador = self.cacadores.get(numero)
         if cacador is None:

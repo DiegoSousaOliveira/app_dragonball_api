@@ -40,8 +40,11 @@ def anotar(resposta, ms):
 def requisicao_crua(caminho, params=None, timeout=api.TIMEOUT):
     """GET direto, SEM cache e sem esconder erros: para ver a resposta exatamente como ela vem.
     Erros de rede sobem como excecoes do requests."""
+    base = api.URL_BASE
+    if caminho.startswith("/esferas/"):            # Caca as Esferas: essas rotas ficam fora do /api
+        base = base[:-len("/api")]
     inicio = time.perf_counter()
-    resposta = requests.get(api.URL_BASE + caminho, params=params, headers=cabecalhos(), timeout=timeout)
+    resposta = requests.get(base + caminho, params=params, headers=cabecalhos(), timeout=timeout)
     anotar(resposta, (time.perf_counter() - inicio) * 1000)
     return resposta
 

@@ -149,7 +149,8 @@ class TelaRede(Tela):
 
     # ---------------- Testar ----------------
 
-    ENDPOINTS = ["/characters", "/planets", "/transformations", "/characters/{id}", "/planets/{id}"]
+    ENDPOINTS = ["/characters", "/planets", "/transformations", "/characters/{id}", "/planets/{id}",
+                 "/esferas/pista"]
 
     def aba_testar(self, aba):
         linha = ctk.CTkFrame(aba, fg_color="transparent")

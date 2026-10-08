@@ -6,6 +6,7 @@ from http.server import ThreadingHTTPServer
 
 from core.armazenamento import PASTA_USUARIO
 from core.descoberta import RespondedorDeDescoberta, ips_locais
+from core.esferas import Cacada
 from servidor.chat import Chat
 from servidor.espelho import Espelho
 from servidor.monitor import Monitor
@@ -43,6 +44,7 @@ class ServidorDragonBall:
         self.placar = PlacarDaTurma(arquivo_placar or PASTA_USUARIO / "placar_da_turma.json")
         self.sala = Sala(self.espelho, self.placar)
         self.chat = Chat()
+        self.cacada = Cacada(avisar=self.chat.mensagem_do_professor)   # desligada ate o professor iniciar
         self.host = host
         self.http = abrir_porta(host, porta)
         self.http.app = self               # o tratador acha tudo por aqui (self.server.app)

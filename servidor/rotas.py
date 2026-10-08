@@ -20,6 +20,7 @@ Rotas:
   POST /turma/partida/<id>/transformar | /progresso {"rodada","pontos","terminou"} | /desistir
   GET  /chat?depois=<id>&versao=<v>   mensagens novas do chat
   POST /chat                     {"texto"}   (403 se o chat estiver fechado ou o aluno bloqueado)
+  GET|POST /esferas/...          Caca as Esferas (tudo em servidor/rotas_esferas.py)
 O aluno se identifica pelo cabecalho X-Jogador (recebido em /turma/entrar).
 Os controles do professor (fechar o chat, bloquear, apagar) NAO tem rota: ficam so no painel.
 """
@@ -32,6 +33,7 @@ from urllib.parse import parse_qsl, urlsplit
 
 from core import api
 from servidor import espelho as esp
+from servidor import rotas_esferas
 from servidor.chat import Proibido
 from servidor.placar import DadoInvalido
 
@@ -138,7 +140,8 @@ def rota_partida(app, metodo, caminho, dados, jogador, host):
 
 def rota_get(app, caminho, params, host, jogador=""):
     if caminho in ("", "/"):
-        return Resposta(200, PAGINA_INICIAL.encode("utf-8"), "text/html; charset=utf-8")
+        pagina = PAGINA_INICIAL.replace("</ul>", "</ul>" + rotas_esferas.link_da_area(app))   # "" sem cacada
+        return Resposta(200, pagina.encode("utf-8"), "text/html; charset=utf-8")
     if caminho == "/turma/ping":
         return json_resposta({"servico": "Dragon Ball Dex", "versao": VERSAO, "nome": app.nome})
     if caminho == "/turma/placar":
@@ -229,7 +232,10 @@ class TratadorDragonBall(BaseHTTPRequestHandler):
         jogador = (self.headers.get("X-Jogador") or "").strip()[:20]
         host = self.headers.get("Host") or f"{app.enderecos()[0]}"
         try:
-            if metodo == "GET":
+            if partes.path.startswith("/esferas/"):        # Caca as Esferas: servidor/rotas_esferas.py
+                resposta = Resposta(*rotas_esferas.atender(app, metodo, partes.path, params, self.headers,
+                                                           self._ler_corpo_json))
+            elif metodo == "GET":
                 resposta = rota_get(app, partes.path, params, host, jogador)
             else:
                 resposta = rota_post(app, partes.path, self._ler_corpo_json(), ip, aluno, jogador, host)
