@@ -7,6 +7,7 @@ Como funciona (UDP broadcast):
      {"porta": 8000, "nome": "..."}
   3. o IP de quem respondeu + a porta = endereco do servidor.
 Algumas redes bloqueiam broadcast; ai e so digitar o endereco que aparece no telao.
+A mesma porta tambem ouve o "grito" da Caca as Esferas (outro prefixo: veja core/esferas.py).
 """
 
 import json
@@ -83,8 +84,11 @@ def procurar_servidores(espera=1.5):
 class RespondedorDeDescoberta:
     """Roda no servidor: escuta a porta UDP 50505 e responde a quem perguntar."""
 
-    def __init__(self, porta_http, nome="Servidor do professor", host="0.0.0.0"):
+    def __init__(self, porta_http, nome="Servidor do professor", host="0.0.0.0", ao_receber_outro=None):
         self.resposta = json.dumps({"porta": porta_http, "nome": nome}).encode("utf-8")
+        # Para mensagens que NAO sao a pergunta (ex.: o grito da Caca as Esferas): ao_receber_outro(dados,
+        # remetente) devolve os bytes da resposta ou None. Sem ela, o resto e ignorado como sempre foi.
+        self.ao_receber_outro = ao_receber_outro
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.bind((host, PORTA_DESCOBERTA))
@@ -106,6 +110,13 @@ class RespondedorDeDescoberta:
                     self.sock.sendto(self.resposta, remetente)
                 except OSError:
                     pass
+            elif self.ao_receber_outro is not None:
+                try:
+                    outra = self.ao_receber_outro(dados, remetente)
+                    if outra:
+                        self.sock.sendto(outra, remetente)
+                except Exception:
+                    pass                   # mensagem estranha nao derruba a descoberta
 
     def parar(self):
         self.rodando = False

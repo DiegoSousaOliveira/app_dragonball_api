@@ -1,8 +1,11 @@
-"""Testes das rotas /esferas/ (servidor de teste em 127.0.0.1), pedindo como o app, o navegador e o curl."""
+"""Testes das rotas /esferas/ (servidor de teste em 127.0.0.1), pedindo como o app, o navegador e o curl.
+Tambem o grito UDP (junto com a descoberta antiga) e 15 alunos resgatando ao mesmo tempo."""
+
+import socket
 
 import requests
 
-from core import api, esferas, rede
+from core import api, descoberta, esferas, esferas_cliente, rede
 from servidor import rotas_esferas
 from servidor.rotas import PAGINA_INICIAL
 from tests import test_servidor
@@ -230,3 +233,47 @@ def test_iniciar_cacada_pega_quem_esta_online():
     finally:
         cacada.encerrar()
         cacada.nova()
+
+
+# ---------------- grito (UDP) ----------------
+
+def mandar_udp(*mensagens):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        for mensagem in mensagens:
+            sock.sendto(mensagem, ("127.0.0.1", descoberta.PORTA_DESCOBERTA))
+    finally:
+        sock.close()
+
+
+@com_cacada
+def test_grito_udp_e_a_descoberta_antiga_continua_igual():
+    app = servidor()
+    numero = numero_de(entrar("Ana G"))
+    respondedor = descoberta.RespondedorDeDescoberta(
+        8124, "Teste", host="127.0.0.1",
+        ao_receber_outro=lambda dados, remetente: rotas_esferas.ao_receber_udp(app, dados, remetente))
+    try:
+        mandar_udp(b"\xff\xfe", b"DBDEX-ESFERA", b"DBDEX-ESFERA abc", b"x" * 1000)     # lixo na porta
+        direto = esferas_cliente.gritar(numero, "kamehameha", direto=True)            # sem servidor: broadcast
+        assert direto["ok"] is True and direto["codigo"] == codigo(numero, 6) and direto["ip"] == "127.0.0.1"
+        assert esferas_cliente.gritar(numero, "hadouken")["ok"] is False
+        achados = descoberta.procurar_servidores(espera=1.0)
+        assert {"endereco": "127.0.0.1:8124", "nome": "Teste"} in achados              # igual ao teste antigo
+        assert respondedor.thread.is_alive()
+    finally:
+        respondedor.parar()
+    assert any(e["tipo"] == "grito" for e in app.cacada.eventos_depois(0))
+
+
+def test_mensagem_estranha_nao_derruba_a_descoberta():
+    def com_defeito(dados, remetente):
+        raise RuntimeError("um erro qualquer no tratamento do grito")
+
+    respondedor = descoberta.RespondedorDeDescoberta(8125, "Teste", host="127.0.0.1", ao_receber_outro=com_defeito)
+    try:
+        mandar_udp(esferas.montar_grito(1, "KAMEHAMEHA"), b"qualquer coisa")
+        assert {"endereco": "127.0.0.1:8125", "nome": "Teste"} in descoberta.procurar_servidores(espera=1.0)
+        assert respondedor.thread.is_alive()
+    finally:
+        respondedor.parar()

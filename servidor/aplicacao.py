@@ -7,6 +7,7 @@ from http.server import ThreadingHTTPServer
 from core.armazenamento import PASTA_USUARIO
 from core.descoberta import RespondedorDeDescoberta, ips_locais
 from core.esferas import Cacada
+from servidor import rotas_esferas
 from servidor.chat import Chat
 from servidor.espelho import Espelho
 from servidor.monitor import Monitor
@@ -59,7 +60,9 @@ class ServidorDragonBall:
         self._thread.start()
         if self.usar_descoberta:
             try:
-                self.descoberta = RespondedorDeDescoberta(self.porta, self.nome, self.host)
+                self.descoberta = RespondedorDeDescoberta(
+                    self.porta, self.nome, self.host,
+                    ao_receber_outro=lambda dados, remetente: rotas_esferas.ao_receber_udp(self, dados, remetente))
             except OSError as problema:
                 self.aviso_descoberta = f"Busca automatica indisponivel ({problema}). Digite o IP."
         # Em segundo plano: deixa a lista de personagens pronta na memoria
