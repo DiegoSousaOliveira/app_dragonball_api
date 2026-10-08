@@ -1,7 +1,7 @@
 ; Instalador do Dragon Ball Dex (Inno Setup 6).
 ; Nao rode este arquivo direto: use  python instalador\construir.py  (ele gera o .exe antes).
 
-#define Versao "2.3.0"
+#define Versao "2.3.1"
 #define Nome "Dragon Ball Dex"
 #define Exe "DragonBallDex.exe"
 
