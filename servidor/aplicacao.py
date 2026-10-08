@@ -11,6 +11,7 @@ from servidor import rotas_esferas
 from servidor.chat import Chat
 from servidor.conquista import Conquista
 from servidor.espelho import Espelho
+from servidor.gritos import Gritos
 from servidor.monitor import Monitor
 from servidor.placar import PlacarDaTurma
 from servidor.rotas import TratadorDragonBall
@@ -48,6 +49,9 @@ class ServidorDragonBall:
         self.chat = Chat()
         self.cacada = Cacada(avisar=self.chat.mensagem_do_professor)   # desligada ate o professor iniciar
         self.conquista = Conquista(self.espelho, avisar=self.chat.mensagem_do_professor)   # idem
+        self.gritos = Gritos()
+        self.conquista.ao_conquistar = lambda atacante, nome, planeta, dono: self.gritos.anunciar(
+            atacante, nome, "conquista", f"{nome} conquistou {planeta}!", envolvidos={atacante, dono} - {None})
         self.host = host
         self.http = abrir_porta(host, porta)
         self.http.app = self               # o tratador acha tudo por aqui (self.server.app)

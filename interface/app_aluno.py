@@ -4,6 +4,7 @@ import customtkinter as ctk
 
 from core import api, turma
 from interface import ajuda, janelas, tarefas, tema
+from interface.som_da_turma import JanelaSom, SomDaTurma
 from interface.telas.batalha import TelaBatalha
 from interface.telas.chat import TelaChat
 from interface.telas.conexao import TelaConexao
@@ -51,6 +52,7 @@ class AppAluno(ctk.CTk):
         self.desafios_vistos = set()
         self.duelo_atual = None
         self.chat_lido = None            # ultima mensagem do chat que o aluno ja viu (None = acabou de entrar)
+        self.som = SomDaTurma(self)      # os gritos de guerra tocam em qualquer tela (interface/som_da_turma.py)
         self._geracao = 0                # muda a cada conexao: ciclos antigos de pergunta param sozinhos
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -95,7 +97,10 @@ class AppAluno(ctk.CTk):
         self.rotulo_conexao = ctk.CTkLabel(rodape, text="● desconectado", anchor="w", justify="left",
                                            font=tema.fonte(12), text_color=tema.TEXTO_SECUNDARIO)
         self.rotulo_conexao.pack(fill="x", pady=(2, 8))
-        tema.botao_secundario(rodape, "Trocar conexão", self.mostrar_conexao, largura=170).pack()
+        botoes = ctk.CTkFrame(rodape, fg_color="transparent")
+        botoes.pack(fill="x")
+        tema.botao_secundario(botoes, "Trocar conexão", self.mostrar_conexao, largura=126).pack(side="left")
+        tema.botao_secundario(botoes, "🔊", lambda: JanelaSom(self), largura=40).pack(side="right")   # som
 
     def _rolagem_do_menu(self):
         """Mostra a barra de rolagem do menu so quando os itens nao cabem."""
@@ -140,6 +145,7 @@ class AppAluno(ctk.CTk):
 
     def mostrar_conexao(self):
         self._geracao += 1                     # para a vigia da sala da conexao anterior
+        self.som.reiniciar()
         self.estado_sala = None
         self.chat_lido = None
         self.atualizar_selo_do_chat(0)
@@ -211,6 +217,7 @@ class AppAluno(ctk.CTk):
             if self.chat_lido is None:                  # acabou de entrar: o que ja estava la conta como lido
                 self.chat_lido = chat["ultimo_id"]
             self.atualizar_selo_do_chat(chat["ultimo_id"] - self.chat_lido)
+        self.som.novidades(estado.get("novidades"))         # so existe com a Caca ou a Conquista valendo
         self.after(1500, lambda: self.vigiar_sala(geracao))
 
     def _sala_falhou(self, erro, geracao):

@@ -279,7 +279,8 @@ class Conquista:
                 texto = f"🏴 {atacante.nome} conquistou o território neutro {territorio.nome}!"
             self._evento("conquista", agora, texto, territorio=territorio.id, cor=atacante.cor, jogador=atacante.id)
             if self.ao_conquistar:
-                self._ganchos.append((self.ao_conquistar, (atacante.id, atacante.nome, territorio.nome)))
+                self._ganchos.append((self.ao_conquistar, (atacante.id, atacante.nome, territorio.nome,
+                                                           dono.id if dono else None)))
         else:
             if dono:
                 dono.defesas += 1

@@ -17,6 +17,8 @@ import customtkinter as ctk
 from core import esferas
 from interface import tema
 from interface.desenho_esfera import desenhar_esfera
+from interface import audio
+from interface.aba_gritos import tocar_grito_no_telao
 from interface.efeito_dragao import AvisoNoTelao, EfeitoDragao, Som
 from servidor import rotas_esferas
 
@@ -299,7 +301,12 @@ class AbaCacada(ctk.CTkFrame):
                 self.som.tocar("achado")
         elif tipo == "completou":
             self.anotar(evento, f"🐉 {evento['nome']} juntou as 7 esferas! ({evento['posicao']}º lugar)")
-            self.som.tocar("dragao")
+            if self.som.mudo:
+                pass
+            elif audio.player().disponivel and evento.get("jogador"):
+                tocar_grito_no_telao(self.servidor, evento["jogador"])        # o grito de quem invocou
+            else:
+                self.som.tocar("dragao")
             if evento["posicao"] == 1:
                 self.abrir_efeito(evento)
             else:

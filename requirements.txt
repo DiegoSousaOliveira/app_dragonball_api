@@ -1,3 +1,4 @@
 requests
 customtkinter>=5.2
 pillow
+miniaudio            # so o app do aluno usa (som do grito de guerra); o servidor continua so com a biblioteca padrao

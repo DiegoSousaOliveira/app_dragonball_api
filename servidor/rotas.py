@@ -21,6 +21,7 @@ Rotas:
   GET  /chat?depois=<id>&versao=<v>   mensagens novas do chat
   POST /chat                     {"texto"}   (403 se o chat estiver fechado ou o aluno bloqueado)
   GET|POST /esferas/...          Caca as Esferas (tudo em servidor/rotas_esferas.py)
+  GET|POST /gritos/...           Grito de Guerra (servidor/rotas_gritos.py)
   GET|POST /conquista/...        Conquista de Territorios (servidor/rotas_conquista.py; lutas "cq-" em /turma/partida/)
 O aluno se identifica pelo cabecalho X-Jogador (recebido em /turma/entrar).
 Os controles do professor (fechar o chat, bloquear, apagar) NAO tem rota: ficam so no painel.
@@ -34,7 +35,7 @@ from urllib.parse import parse_qsl, urlsplit
 
 from core import api
 from servidor import espelho as esp
-from servidor import rotas_conquista, rotas_esferas
+from servidor import rotas_conquista, rotas_esferas, rotas_gritos
 from servidor.chat import Proibido
 from servidor.placar import DadoInvalido
 
@@ -155,6 +156,9 @@ def rota_get(app, caminho, params, host, jogador=""):
     if caminho == "/turma/sala":
         dados = app.sala.visao(jogador)
         dados["chat"] = app.chat.resumo(jogador)
+        novidades = rotas_gritos.novidades(app)           # so com a Caca ou a Conquista valendo (sons dos gritos)
+        if novidades:
+            dados["novidades"] = novidades
         return json_resposta(dados)
     if caminho == "/chat":
         app.sala.jogador(jogador)                         # so quem entrou na sala le o chat
@@ -238,6 +242,9 @@ class TratadorDragonBall(BaseHTTPRequestHandler):
             if partes.path.startswith("/esferas/"):        # Caca as Esferas: servidor/rotas_esferas.py
                 resposta = Resposta(*rotas_esferas.atender(app, metodo, partes.path, params, self.headers,
                                                            self._ler_corpo_json))
+            elif partes.path.startswith("/gritos/"):       # Grito de Guerra: servidor/rotas_gritos.py
+                resposta = Resposta(*rotas_gritos.atender(app, metodo, partes.path, params, self.headers,
+                                                          self._ler_corpo_json))
             elif partes.path.startswith("/conquista/"):    # Conquista de Territorios: servidor/rotas_conquista.py
                 resposta = Resposta(*rotas_conquista.atender(app, metodo, partes.path, params, self.headers,
                                                              self._ler_corpo_json))

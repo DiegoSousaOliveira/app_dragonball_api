@@ -14,6 +14,8 @@ from tkinter import messagebox
 import customtkinter as ctk
 
 from interface import tema
+from interface import audio
+from interface.aba_gritos import tocar_grito_no_telao
 from interface.efeito_dragao import Som
 from interface.mapa_galaxia import MapaGalaxia
 from servidor import conquista as modulo
@@ -69,7 +71,8 @@ class QuadroDaConquista(ctk.CTkFrame):
 
     def mostrar_faixa(self, texto, segundos=5):
         """A faixa grande no alto: "🏴 Ana conquistou Namek de Bruno!"."""
-        self.faixa.configure(text=f"  {texto}  ")
+        largura = self.winfo_width() / ctk.ScalingTracker.get_widget_scaling(self)
+        self.faixa.configure(text=f"  {texto}  ", wraplength=max(300, int(largura) - 40))   # frase longa quebra a linha
         self.faixa.pack(fill="x", pady=(0, 6), before=self._corpo)
         self._faixa_ate = time.time() + segundos
 
@@ -218,9 +221,13 @@ class AbaConquista(ctk.CTkFrame):
         if tipo != "nova":
             self.feed.append(f"{evento['hora']} · {evento['texto']}")
         if tipo == "conquista":
+            grito = self.servidor.gritos.grito_de(evento.get("jogador"))
+            if not self.som.mudo and audio.player().disponivel:
+                tocar_grito_no_telao(self.servidor, evento.get("jogador"))    # o grito do vencedor no telao
+            elif not self.som.mudo:
+                self.som.tocar("conquista")
             for quadro in self._quadros():
-                quadro.mostrar_faixa(evento["texto"])
-            self.som.tocar("conquista")
+                quadro.mostrar_faixa(f"“{grito['frase']}”   {evento['texto']}", segundos=6)
         elif tipo == "defesa":
             self.som.tocar("defesa")
         elif tipo == "invasao":

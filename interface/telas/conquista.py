@@ -9,7 +9,7 @@ from tkinter import messagebox
 
 import customtkinter as ctk
 
-from core import api, conquista_cliente, turma
+from core import api, conquista_cliente, gritos_cliente, turma
 from interface import janelas, tarefas, tema
 from interface.mapa_galaxia import MapaGalaxia, cor_do_dono
 from interface.telas import Tela, cabecalho
@@ -129,6 +129,7 @@ class TelaConquista(Tela):
         self.resultado = ctk.CTkLabel(caixa, text="", font=tema.fonte(12, negrito=True), anchor="w",
                                       justify="left", wraplength=240)
         self.resultado.pack(fill="x", padx=12, pady=(0, 8))
+        self.criar_grito()
         caixa = self.cartao("🏆 Ranking")
         self.ranking = ctk.CTkLabel(caixa, text="", font=tema.fonte(13, negrito=True), anchor="w", justify="left")
         self.ranking.pack(fill="x", padx=12, pady=(0, 8))
@@ -137,11 +138,69 @@ class TelaConquista(Tela):
                                        wraplength=240, text_color=tema.TEXTO_SECUNDARIO)
         self.texto_feed.pack(fill="x", padx=12, pady=(0, 8))
 
+    def criar_grito(self):
+        """O meu grito de guerra: a frase + o audio (o SERVIDOR baixa o link, com protecoes)."""
+        caixa = self.cartao("📣 Seu grito de guerra")
+        self.grito_atual = ctk.CTkLabel(caixa, text="...", font=tema.fonte(14, negrito=True), anchor="w",
+                                        justify="left", wraplength=240)
+        self.grito_atual.pack(fill="x", padx=12)
+        self.campo_frase = ctk.CTkEntry(caixa, placeholder_text="Sua frase (até 40 letras)", height=32)
+        self.campo_frase.pack(fill="x", padx=12, pady=(6, 3))
+        self.campo_url = ctk.CTkEntry(caixa, placeholder_text="Link do áudio: https://.../grito.mp3", height=32)
+        self.campo_url.pack(fill="x", padx=12, pady=3)
+        tema.texto_secundario(caixa, "Link DIRETO de um arquivo .mp3, .wav ou .ogg (até 500 KB). YouTube não vale: "
+                                     "ele abre uma página, não um arquivo.", 11, wraplength=240,
+                              justify="left").pack(anchor="w", padx=12)
+        linha = ctk.CTkFrame(caixa, fg_color="transparent")
+        linha.pack(fill="x", padx=12, pady=(6, 2))
+        tema.botao(linha, "Salvar", self.salvar_grito, largura=76, altura=30).pack(side="left")
+        tema.botao_secundario(linha, "▶ Testar", self.app.som.tocar_meu_grito, largura=76, altura=30).pack(
+            side="left", padx=4)
+        tema.botao_secundario(linha, "Padrão", self.grito_padrao, largura=70, altura=30).pack(side="left")
+        self.status_grito = ctk.CTkLabel(caixa, text="", font=tema.fonte(12, negrito=True), anchor="w",
+                                         justify="left", wraplength=240)
+        self.status_grito.pack(fill="x", padx=12, pady=(0, 8))
+        self._grito_carregado = False
+
+    def mostrar_grito(self, meu):
+        self._grito_carregado = True
+        tipo = " (padrão)" if meu["padrao"] else ("" if not meu["audio_personalizado"] else " 🎵")
+        self.grito_atual.configure(text=f"“{meu['frase']}”{tipo}")
+        if meu["bloqueado"]:
+            self.status_grito.configure(text="🔇 O professor bloqueou o seu grito personalizado.",
+                                        text_color=tema.PERIGO)
+        elif self.status_grito.cget("text").startswith("🔇"):
+            self.status_grito.configure(text="")                    # o professor liberou
+
+    def salvar_grito(self):
+        frase = self.campo_frase.get().strip() or None
+        url = self.campo_url.get().strip() or None
+        if not frase and not url:
+            self.status_grito.configure(text="Escreva uma frase e/ou cole um link.", text_color=tema.DESTAQUE)
+            return
+        self.status_grito.configure(text="Enviando... (o servidor baixa o áudio)", text_color=tema.TEXTO_SECUNDARIO)
+
+        def deu_certo(meu):
+            self.campo_frase.delete(0, "end")
+            self.campo_url.delete(0, "end")
+            self.mostrar_grito(meu)
+            self.status_grito.configure(text="✔ Grito salvo!", text_color=tema.SUCESSO)
+
+        tarefas.em_segundo_plano(self, lambda: gritos_cliente.trocar(frase, url), deu_certo,
+                                 lambda erro: self.status_grito.configure(text=f"✖ {erro}", text_color=tema.PERIGO))
+
+    def grito_padrao(self):
+        tarefas.em_segundo_plano(self, gritos_cliente.usar_padrao,
+                                 lambda meu: (self.mostrar_grito(meu), self.status_grito.configure(
+                                     text="✔ Voltou ao grito padrão.", text_color=tema.SUCESSO)),
+                                 lambda erro: self.status_grito.configure(text=f"✖ {erro}", text_color=tema.PERIGO))
+
     # ---------------- aparecer / sumir ----------------
 
     def ao_mostrar(self):
         if self.corpo is not None:
             self.perguntar()
+            tarefas.em_segundo_plano(self, gritos_cliente.meu, self.mostrar_grito, lambda erro: None)
 
     def ao_esconder(self):
         if self._agendado:
@@ -285,6 +344,7 @@ class TelaConquista(Tela):
 
     def abrir_luta(self, id_partida, alvo):
         nome = alvo["nome"] if alvo else ""
+        self.app.som.tocar_meu_grito()                      # ao invadir, o grito toca no PC do atacante
         self.app.abrir_duelo({"id": id_partida, "tipo": "invasao"},
                              classe=lambda app, partida: TelaInvasao(app, partida, nome))
 

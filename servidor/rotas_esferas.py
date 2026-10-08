@@ -110,7 +110,14 @@ def _resgatar(app, cabecalhos, dados, host):
     quem = _quem(app, cabecalhos)
     if quem is None:
         raise DadoInvalido("Entre na sala pelo app (falta o cabeçalho X-Jogador).")
-    return _json(app.cacada.resgatar(*quem, dados.get("codigo"), endereco=host))
+    visao = app.cacada.resgatar(*quem, dados.get("codigo"), endereco=host)
+    resgate = visao["resgate"]
+    if resgate["nova"]:                         # o grito de guerra de quem achou toca nos PCs (servidor/gritos.py)
+        if resgate["esfera"] == 6:
+            app.gritos.anunciar(quem[0], quem[1], "esfera6", f"{quem[1]} achou a esfera de 6 estrelas!", {quem[0]})
+        if visao["posicao"] and len(visao["esferas"]) == len(esferas.ESFERAS):
+            app.gritos.anunciar(quem[0], quem[1], "dragao", f"{quem[1]} invocou o dragão!", {quem[0]})
+    return _json(visao)
 
 
 def _pedido(app, cabecalhos, dados, host):

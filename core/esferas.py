@@ -485,7 +485,8 @@ class Cacada:
             self.concluidos += 1
             cacador.posicao = self.concluidos
             cacador.pedido_ate = agora + TEMPO_DO_PEDIDO
-            self._evento("completou", agora, nome=cacador.nome, numero=cacador.numero, posicao=cacador.posicao)
+            self._evento("completou", agora, nome=cacador.nome, numero=cacador.numero, posicao=cacador.posicao,
+                         jogador=cacador.id)
             self._avisos.append(f"🐉 {cacador.nome} invocou o dragão! ({cacador.posicao}º lugar)")
 
     def resgatar(self, id_jogador, nome, texto, endereco=""):
