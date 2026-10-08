@@ -3,7 +3,7 @@
 import customtkinter as ctk
 
 from core import api, turma
-from interface import janelas, tarefas, tema
+from interface import ajuda, janelas, tarefas, tema
 from interface.telas.batalha import TelaBatalha
 from interface.telas.chat import TelaChat
 from interface.telas.conexao import TelaConexao
@@ -155,6 +155,7 @@ class AppAluno(ctk.CTk):
         self.habilitar_menu(True)
         self.esconder_aviso()
         self.mostrar("personagens")
+        ajuda.abrir_na_primeira_vez(self, self.nome_do_aluno)     # o guia "Como funciona?" (interface/ajuda.py)
         if api.conectado_ao_servidor():
             self.vigiar_sala(self._geracao)
 

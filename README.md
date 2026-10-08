@@ -99,6 +99,8 @@ permissão: clique em **Permitir acesso** e marque redes privadas **e** pública
 3. Clique em **🔍 Procurar na rede**: o endereço do servidor aparece sozinho. (Se não aparecer, digite o que está no
    telão.)
 4. **Conectar ao servidor**. Pronto!
+5. Na primeira vez, abre sozinho o guia **📖 Como funciona?**. Depois, ele fica no botão **❔ Como funciona?**, no
+   topo de cada tela.
 
 ![Tela de conexão](docs/imagens/conexao.png)
 
@@ -270,6 +272,10 @@ Outros status que aparecem: **409** (a caçada ainda não começou ou está paus
 | 🐉 **Esferas** | A Caça às Esferas (seção 4): número de caçador, dica da vez, resgate dos códigos e o grito na rede. Só com o servidor da sala, depois que o professor dá a largada. |
 | 📡 **Rede** | O raio-X da conexão (seção 6). |
 
+**Ninguém fica perdido:** em todas as telas, o botão **❔ Como funciona?** (no canto de cima) abre um guia com a
+explicação daquela tela: para que serve, como usar passo a passo e dicas. O guia também tem "🚀 Primeiros passos" e
+"🆘 Deu problema?", e abre sozinho na primeira vez que cada aluno (pelo nome) conecta naquele computador.
+
 | | |
 |---|---|
 | ![Personagens](docs/imagens/personagens.png) | ![Batalha](docs/imagens/batalha.png) |
@@ -360,7 +366,7 @@ python main.py                         aplicativo do aluno
 python main.py --servidor              servidor + painel
 python main.py --servidor --sem-janela servidor só no terminal
 python main.py --fumaca [--conectar IP:PORTA]
-python tests/rodar_testes.py           78 testes (sem internet; o servidor de teste usa 127.0.0.1)
+python tests/rodar_testes.py           80 testes (sem internet; o servidor de teste usa 127.0.0.1)
 python ferramentas/simular_cacada.py --conectar IP:PORTA    alunos falsos para ensaiar a caçada
 ```
 
@@ -375,7 +381,7 @@ python instalador/construir.py        ->  dist_instalador\DragonBallDex-Setup-2.
 |---|---|
 | `core/` | Lógica sem interface: dados (`api.py`), imagens, poder/ki, batalha, quiz, filtros, rede, placar (`turma.py`), busca na rede (`descoberta.py`), Caça às Esferas (`esferas.py`: códigos, radar, pontos; `esferas_cliente.py`: o lado do aluno) |
 | `servidor/` | O servidor do professor: rotas HTTP, espelho da API, placar da turma, monitor ao vivo, rotas da caçada (`rotas_esferas.py`) |
-| `interface/` | CustomTkinter: `app_aluno.py`, `painel_servidor.py`, `telas/`, componentes (card, mini-card...), aba e telão da caçada (`aba_cacada.py`), efeito do dragão (`efeito_dragao.py`) |
+| `interface/` | CustomTkinter: `app_aluno.py`, `painel_servidor.py`, `telas/`, componentes (card, mini-card...), aba e telão da caçada (`aba_cacada.py`), efeito do dragão (`efeito_dragao.py`), guia "Como funciona?" (`ajuda.py`) |
 | `dados/` | Cópia dos dados da API (usada sem internet) · `ferramentas/gerar_snapshot.py` atualiza |
 | `ferramentas/` | `gerar_snapshot.py`, `explorar_api.py` e `simular_cacada.py` (ensaio da caçada) |
 | `cache/imagens/` | Fotos que vão dentro do instalador |

@@ -2,14 +2,17 @@
 
 import customtkinter as ctk
 
-from interface import tema
+from interface import ajuda, tema
 
 
 def cabecalho(tela, titulo, subtitulo=""):
-    """Titulo amarelo + uma linha de explicacao no topo de cada tela."""
+    """Titulo amarelo + uma linha de explicacao no topo de cada tela (+ o botao "❔ Como funciona?")."""
     area = ctk.CTkFrame(tela, fg_color="transparent")
     area.pack(fill="x", padx=24, pady=(20, 8))
-    tema.titulo(area, titulo, 26).pack(anchor="w")
+    linha = ctk.CTkFrame(area, fg_color="transparent")    # o botao fica so na linha do titulo
+    linha.pack(fill="x")
+    ajuda.botao_de_ajuda(linha, tela)                 # abre o guia na explicacao desta tela (interface/ajuda.py)
+    tema.titulo(linha, titulo, 26).pack(anchor="w")
     if subtitulo:
         tema.texto_secundario(area, subtitulo, 14).pack(anchor="w")
     return area

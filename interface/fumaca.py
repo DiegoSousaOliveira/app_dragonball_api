@@ -19,6 +19,7 @@ ARQUIVO = PASTA_USUARIO / "fumaca.txt"
 
 
 def rodar(endereco=None):
+    from interface import ajuda
     from interface.app_aluno import AppAluno
     from interface.telas import batalha as tela_batalha
     from interface.telas.detalhe import JanelaPersonagem
@@ -66,6 +67,7 @@ def rodar(endereco=None):
         (2000, "chat", lambda: app.mostrar("chat")),
         (2000, "esferas", lambda: app.mostrar("esferas")),
         (2000, "rede", lambda: app.mostrar("rede")),
+        (1500, "ajuda", lambda: [ajuda.abrir_ajuda(app, chave) for chave, *_ in ajuda.GUIA][-1].fechar()),
         (2000, "fim", app.destroy),
     ]
 
