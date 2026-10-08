@@ -52,6 +52,9 @@ def gerar_exe(arquivo_unico=False):
         comando += dado(imagens, "cache/imagens")            # fotos ja baixadas: o servidor funciona offline
     else:
         print("AVISO: cache/imagens nao existe; o instalador vai sem as fotos embutidas.")
+    figuras = PROJETO / "interface" / "imagens"
+    if figuras.exists():
+        comando += dado(figuras, "interface/imagens")        # o dragao do efeito da Caca as Esferas
     comando.append(str(PROJETO / "main.py"))
     print(f"PyInstaller ({nome})...")
     subprocess.run(comando, check=True, cwd=PROJETO)

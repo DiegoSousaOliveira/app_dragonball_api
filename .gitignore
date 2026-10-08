@@ -19,3 +19,7 @@ backup_*.zip
 
 # Arquivos que o programa grava quando roda pelo codigo-fonte (nome do aluno, placar, caçadas)
 dados_usuario/
+
+# Figura do dragao do efeito da cacada: fica so neste PC (e vai no instalador gerado aqui), nao vai para o
+# GitHub publico. Sem ela, o efeito mostra o dragao desenhado (interface/desenho_dragao.py).
+interface/imagens/shenlong.png
