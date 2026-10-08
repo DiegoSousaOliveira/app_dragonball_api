@@ -1,7 +1,9 @@
 """Testes das rotas /esferas/ (servidor de teste em 127.0.0.1), pedindo como o app, o navegador e o curl.
 Tambem o grito UDP (junto com a descoberta antiga) e 15 alunos resgatando ao mesmo tempo."""
 
+import re
 import socket
+import threading
 
 import requests
 
@@ -277,3 +279,51 @@ def test_mensagem_estranha_nao_derruba_a_descoberta():
         assert respondedor.thread.is_alive()
     finally:
         respondedor.parar()
+
+
+# ---------------- 15 alunos ao mesmo tempo ----------------
+
+@com_cacada
+def test_15_alunos_ao_mesmo_tempo():
+    """15 threads acham (pelas rotas, como os alunos) e resgatam as 7 esferas ao mesmo tempo."""
+    app = servidor()
+    alunos = [entrar(f"Aluno {i:02d} S") for i in range(15)]
+    numeros = [numero_de(aluno) for aluno in alunos]
+    problemas = []
+    largada = threading.Barrier(len(alunos))
+    procurar = re.compile(r"ESF-[A-Z0-9]{5}").search
+
+    def cacar(aluno, numero):
+        try:
+            largada.wait(timeout=10)                       # todos comecam juntos
+            navegador = {"User-Agent": CHROME}
+            x, y = esferas.alvo_do_radar(app.cacada.segredo, numero)
+            grito = rotas_esferas.ao_receber_udp(app, esferas.montar_grito(numero, "KAMEHAMEHA"), None)
+            codigos = {
+                2: procurar(get("/esferas/navegador", navegador, cacador=numero).text).group(0),
+                3: get("/esferas/pista", aluno).headers["X-Esfera"],
+                4: procurar(get("/esferas/radar", navegador, cacador=numero, x=x, y=y).text).group(0),
+                5: procurar(get("/esferas/caverna-namek", navegador, cacador=numero).text).group(0),
+                6: esferas.ler_resposta_grito(grito)["codigo"],
+                7: procurar(get("/esferas/terminal", {"User-Agent": CURL}, cacador=numero).text).group(0),
+            }
+            for esfera, codigo in codigos.items():
+                resposta = post("/esferas/resgatar", {"codigo": codigo}, aluno)
+                if resposta.status_code != 200 or resposta.json()["resgate"]["esfera"] != esfera:
+                    problemas.append(f"{numero}/{esfera}: {resposta.status_code} {resposta.text[:80]}")
+        except Exception as erro:
+            problemas.append(f"{numero}: {erro!r}")
+
+    threads = [threading.Thread(target=cacar, args=par) for par in zip(alunos, numeros)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=30)
+    assert not problemas, problemas
+    foto = app.cacada.instantaneo()
+    meus = [c for c in foto["cacadores"] if c["numero"] in numeros]
+    assert len(meus) == 15 and all(c["esferas"] == list(range(1, 8)) for c in meus)
+    assert sorted(c["posicao"] for c in meus) == list(range(1, 16))            # ninguem empatou na ordem
+    assert all(c["pontos"] == 7 + esferas.BONUS_ORDEM.get(c["posicao"], 0) for c in meus)
+    assert sum(1 for e in app.cacada.eventos_depois(0) if e["tipo"] == "completou" and e["numero"] in numeros) == 15
+    assert not [p for p in app.monitor.instantaneo()["pedidos"] if p["status"] >= 500]
