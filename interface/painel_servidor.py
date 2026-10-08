@@ -1,11 +1,15 @@
 """Painel do professor: mostra no telao o endereco do servidor, quem esta conectado e cada pedido ao vivo."""
 
+import subprocess
+import sys
 import threading
 import webbrowser
+from pathlib import Path
 from tkinter import messagebox
 
 import customtkinter as ctk
 
+from core import demo
 from interface import janelas, tema
 from interface.aba_cacada import AbaCacada
 from interface.aba_conquista import AbaConquista
@@ -13,6 +17,7 @@ from interface.aba_gritos import AbaGritos
 
 ATUALIZAR_A_CADA = 1000          # milissegundos
 FONTE_MONO = ("Consolas", 12)
+COR_DEMO = "#B79CF2"             # os pedidos do modo demonstracao 🎓 na lista
 
 
 CONSULTAS_AUTOMATICAS = ("/turma/sala", "/chat?", "/turma/partida/", "/turma/placar", "/esferas/estado",
@@ -22,6 +27,16 @@ CONSULTAS_AUTOMATICAS = ("/turma/sala", "/chat?", "/turma/partida/", "/turma/pla
 def eh_automatico(pedido):
     """Pedidos que os apps fazem sozinhos o tempo todo (polling). Escondidos para nao lotar a lista."""
     return pedido["metodo"] == "GET" and pedido["caminho"].startswith(CONSULTAS_AUTOMATICAS)
+
+
+def comando_do_app(*argumentos):
+    """Como abrir o app do aluno: o mesmo DragonBallDex.exe (instalado) ou o main.py (codigo-fonte)."""
+    if getattr(sys, "frozen", False):
+        return [sys.executable, *argumentos]
+    python = Path(sys.executable)
+    sem_janela = python.with_name("pythonw.exe")         # no Windows, sem a janela preta do terminal
+    return [str(sem_janela if sem_janela.exists() else python),
+            str(Path(__file__).resolve().parent.parent / "main.py"), *argumentos]
 
 
 def tempo_legivel(segundos):
@@ -45,6 +60,7 @@ class PainelServidor(ctk.CTk):
         self.protocol("WM_DELETE_WINDOW", self.fechar)
         self.ultimo_pedido_mostrado = 0
         self.progresso_preaquecer = None
+        self.processo_demo = None        # o app aberto pelo botao 🎓 (modo demonstracao)
         self.criar_topo()
         self.criar_colunas()
         self.criar_rodape()
@@ -59,8 +75,12 @@ class PainelServidor(ctk.CTk):
         esquerda.pack(side="left", padx=24, pady=14)
         ctk.CTkLabel(esquerda, text="🐉 Servidor Dragon Ball Dex", font=tema.fonte(24, negrito=True),
                      text_color=tema.DESTAQUE).pack(anchor="w")
-        ctk.CTkLabel(esquerda, text="● LIGADO", font=tema.fonte(15, negrito=True),
-                     text_color=tema.SUCESSO).pack(anchor="w")
+        linha = ctk.CTkFrame(esquerda, fg_color="transparent")
+        linha.pack(anchor="w")
+        ctk.CTkLabel(linha, text="● LIGADO", font=tema.fonte(15, negrito=True),
+                     text_color=tema.SUCESSO).pack(side="left")
+        tema.botao_secundario(linha, "🎓 Modo demonstração", self.abrir_demo, largura=190, altura=28).pack(
+            side="left", padx=(16, 0))
         direita = ctk.CTkFrame(topo, fg_color="transparent")
         direita.pack(side="right", padx=24, pady=10)
         ctk.CTkLabel(direita, text="Alunos: abram o Dragon Ball Dex e cliquem em \"Procurar na rede\" ou digitem:",
@@ -98,12 +118,17 @@ class PainelServidor(ctk.CTk):
         self.ver_automaticos = ctk.CTkCheckBox(caixa, text="Mostrar as consultas automáticas (os apps perguntam "
                                                            "\"tem novidade?\" a cada segundo)",
                                                font=tema.fonte(12), fg_color=tema.DESTAQUE)
-        self.ver_automaticos.pack(anchor="w", padx=10, pady=(0, 6))
+        self.ver_automaticos.pack(anchor="w", padx=10, pady=(0, 2))
+        self.ver_demo = ctk.CTkCheckBox(caixa, text="Mostrar os pedidos do 🎓 modo demonstração (o seu ensaio)",
+                                        font=tema.fonte(12), fg_color=COR_DEMO)
+        self.ver_demo.select()
+        self.ver_demo.pack(anchor="w", padx=10, pady=(0, 6))
         self.pedidos = ctk.CTkTextbox(caixa, wrap="none", font=FONTE_MONO, fg_color=tema.FUNDO)
         self.pedidos.pack(fill="both", expand=True, padx=10, pady=(0, 10))
         self.pedidos.tag_config("ok", foreground=tema.SUCESSO)
         self.pedidos.tag_config("aviso", foreground=tema.DESTAQUE)
         self.pedidos.tag_config("erro", foreground=tema.PERIGO)
+        self.pedidos.tag_config("demo", foreground=COR_DEMO)
         self.pedidos.insert("end", f"{'hora':<9}{'aluno':<15}{'met':<5}{'status':<7}{'ms':>5}  {'rota':<44}{'ip':<16}bytes\n")
         self.pedidos.configure(state="disabled")
         caixa, _ = self.coluna(area, "🏆 Placar da turma", 2, 3)
@@ -219,10 +244,15 @@ class PainelServidor(ctk.CTk):
         for pedido in foto["pedidos"][-min(novos, len(foto["pedidos"])):]:
             if not self.ver_automaticos.get() and eh_automatico(pedido):
                 continue
+            if pedido.get("demo") and not self.ver_demo.get():
+                continue
             status = pedido["status"]
             etiqueta = "erro" if status >= 500 else ("aviso" if status >= 400 else "ok")
+            if pedido.get("demo"):
+                etiqueta = "demo"
             linha = (f"{pedido['hora']:<9}{(pedido['aluno'] or '-')[:14]:<15}{pedido['metodo']:<5}{status:<7}"
-                     f"{pedido['ms']:>5}  {pedido['caminho'][:43]:<44}{pedido['ip']:<16}{pedido['bytes']}\n")
+                     f"{pedido['ms']:>5}  {pedido['caminho'][:43]:<44}{pedido['ip']:<16}{pedido['bytes']}"
+                     + ("   🎓 demo\n" if pedido.get("demo") else "\n"))     # no fim: nao desalinha as colunas
             self.pedidos.insert("end", linha, etiqueta)
         linhas = int(self.pedidos.index("end-1c").split(".")[0])
         if linhas > 400:                                   # guarda so as ultimas 400 linhas
@@ -347,8 +377,42 @@ class PainelServidor(ctk.CTk):
     def abrir_navegador(self):
         webbrowser.open(f"http://127.0.0.1:{self.servidor.porta}/")
 
+    # ---------------- modo demonstracao 🎓 (servidor/mundo_demo.py) ----------------
+
+    def abrir_demo(self):
+        """Abre o app do aluno num mundo de ENSAIO: Caca, Conquista e gritos valendo, 2 alunos-robo e nada disso
+        aparece para a turma. Clicar de novo comeca do zero. O token vai por variavel de ambiente."""
+        self.fechar_demo()
+        self.servidor.ligar_demo()
+        endereco = f"127.0.0.1:{self.servidor.porta}"         # loopback: so este PC entra no ensaio
+        try:
+            self.processo_demo = subprocess.Popen(comando_do_app("--demo"),
+                                                  env=demo.ambiente_para_o_app(self.servidor.token_demo, endereco))
+        except OSError as erro:
+            self.servidor.desligar_demo()
+            messagebox.showerror("Modo demonstração", f"Não consegui abrir o app.\n\n{erro}", parent=self)
+            return
+        self.after(2000, lambda processo=self.processo_demo: self.vigiar_demo(processo))
+
+    def vigiar_demo(self, processo):
+        """O app do ensaio fechou? Entao o mundo demo some (e os robos param)."""
+        if processo is not self.processo_demo:
+            return                                          # outro ensaio comecou depois deste
+        if processo.poll() is None:
+            self.after(2000, lambda: self.vigiar_demo(processo))
+            return
+        self.processo_demo = None
+        self.servidor.desligar_demo()
+
+    def fechar_demo(self):
+        processo, self.processo_demo = self.processo_demo, None
+        if processo is not None and processo.poll() is None:
+            processo.terminate()
+        self.servidor.desligar_demo()
+
     def fechar(self):
         if messagebox.askyesno("Desligar servidor", "Desligar o servidor? Os alunos vão perder a conexão.",
                                parent=self):
+            self.fechar_demo()
             self.servidor.parar()
             self.destroy()

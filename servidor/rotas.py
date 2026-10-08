@@ -24,7 +24,9 @@ Rotas:
   GET|POST /gritos/...           Grito de Guerra (servidor/rotas_gritos.py)
   GET|POST /conquista/...        Conquista de Territorios (servidor/rotas_conquista.py; lutas "cq-" em /turma/partida/)
 O aluno se identifica pelo cabecalho X-Jogador (recebido em /turma/entrar).
-Os controles do professor (fechar o chat, bloquear, apagar) NAO tem rota: ficam so no painel.
+Os controles do professor (fechar o chat, bloquear, apagar, ligar o modo demonstracao) NAO tem rota: ficam so no
+painel. Cada pedido e atendido pelo mundo REAL ou pelo mundo DEMO 🎓 (servidor/mundo_demo.py): as rotas sao as
+mesmas e recebem o mundo como "app".
 """
 
 import json
@@ -35,7 +37,7 @@ from urllib.parse import parse_qsl, urlsplit
 
 from core import api
 from servidor import espelho as esp
-from servidor import rotas_conquista, rotas_esferas, rotas_gritos
+from servidor import mundo_demo, rotas_conquista, rotas_esferas, rotas_gritos
 from servidor.chat import Proibido
 from servidor.placar import DadoInvalido
 
@@ -231,10 +233,11 @@ class TratadorDragonBall(BaseHTTPRequestHandler):
 
     def _atender(self, metodo):
         inicio = time.perf_counter()
-        app = self.server.app
+        servidor = self.server.app
         partes = urlsplit(self.path)
         params = dict(parse_qsl(partes.query))
         ip = self.client_address[0]
+        app = mundo_demo.mundo_do_pedido(servidor, ip, self.headers, partes.path, params)   # real ou demo 🎓
         aluno = (self.headers.get("X-Aluno") or "").strip()[:40]
         jogador = (self.headers.get("X-Jogador") or "").strip()[:20]
         host = self.headers.get("Host") or f"{app.enderecos()[0]}"
@@ -263,7 +266,8 @@ class TratadorDragonBall(BaseHTTPRequestHandler):
             resposta = erro(500, "Erro interno do servidor.")
         self._enviar(resposta)
         ms = int((time.perf_counter() - inicio) * 1000)
-        app.monitor.registrar(ip, aluno, metodo, self.path, resposta.status, ms, len(resposta.corpo))
+        servidor.monitor.registrar(ip, aluno, metodo, self.path, resposta.status, ms, len(resposta.corpo),
+                                   demo=app is not servidor)
 
     def _enviar(self, resposta):
         try:

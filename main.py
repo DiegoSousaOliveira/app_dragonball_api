@@ -8,6 +8,8 @@ Dragon Ball Dex.
     python main.py --host 127.0.0.1         -> servidor so para este computador (testes)
     python main.py --atualizar-cache        -> apaga o cache de dados e baixa de novo
     python main.py --fumaca [--conectar IP:PORTA]  -> o app testa todas as telas sozinho
+    python main.py --demo                   -> modo demonstracao 🎓 (so funciona aberto pelo botao do painel,
+                                               que passa o token; sem ele, abre o app normal)
 
 No instalador, "DragonBallDex.exe" e o aluno e "DragonBallDex.exe --servidor" e o professor.
 """
@@ -62,8 +64,10 @@ def rodar_servidor():
 
 
 def rodar_aluno():
+    from core import demo
     from interface.app_aluno import AppAluno
-    AppAluno().mainloop()
+    ensaio = demo.ler_do_ambiente() if "--demo" in sys.argv else None     # (token, endereco) vindos do painel
+    AppAluno(demo=ensaio).mainloop()
 
 
 def principal():

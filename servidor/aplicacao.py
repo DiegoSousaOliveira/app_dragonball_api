@@ -1,5 +1,6 @@
 """O servidor do professor inteiro: HTTP + espelho + placar + monitor + descoberta na rede."""
 
+import secrets
 import socket
 import threading
 from http.server import ThreadingHTTPServer
@@ -13,6 +14,7 @@ from servidor.conquista import Conquista
 from servidor.espelho import Espelho
 from servidor.gritos import Gritos
 from servidor.monitor import Monitor
+from servidor.mundo_demo import MundoDemo
 from servidor.placar import PlacarDaTurma
 from servidor.rotas import TratadorDragonBall
 from servidor.sala import Sala
@@ -52,6 +54,8 @@ class ServidorDragonBall:
         self.gritos = Gritos()
         self.conquista.ao_conquistar = lambda atacante, nome, planeta, dono: self.gritos.anunciar(
             atacante, nome, "conquista", f"{nome} conquistou {planeta}!", envolvidos={atacante, dono} - {None})
+        self.token_demo = secrets.token_urlsafe(32)   # modo demonstracao 🎓: sorteado a cada vez, so na memoria
+        self.demo = None                   # o mundo do ensaio (servidor/mundo_demo.py): so existe pelo botao 🎓
         self.host = host
         self.http = abrir_porta(host, porta)
         self.http.app = self               # o tratador acha tudo por aqui (self.server.app)
@@ -81,7 +85,20 @@ class ServidorDragonBall:
         except Exception:
             pass
 
+    def ligar_demo(self):
+        """Botao 🎓 do painel: um mundo demo NOVO (o anterior, se houver, e desligado)."""
+        self.desligar_demo()
+        self.demo = MundoDemo(self)
+        return self.demo
+
+    def desligar_demo(self):
+        """O app do ensaio fechou: o mundo demo some (e os robos param)."""
+        demo, self.demo = self.demo, None
+        if demo is not None:
+            demo.parar()
+
     def parar(self):
+        self.desligar_demo()
         if self.descoberta:
             self.descoberta.parar()
         self.http.shutdown()

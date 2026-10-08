@@ -281,14 +281,15 @@ class Cacada:
     """Estados: aguardando -> ativa <-> pausada -> encerrada. 'Nova cacada' volta para aguardando.
 
     avisar(texto): funcao chamada para avisar a turma (o servidor usa o aviso do professor no chat).
-    relogio(): de onde vem a hora (os testes passam um relogio falso para nao precisar esperar)."""
+    relogio(): de onde vem a hora (os testes passam um relogio falso para nao precisar esperar).
+    primeiro_numero: o numero do primeiro cacador (o ensaio do modo demonstracao comeca no 901)."""
 
-    def __init__(self, avisar=None, relogio=time.time):
+    def __init__(self, avisar=None, relogio=time.time, primeiro_numero=1):
         self._trava = threading.Lock()
         self.avisar = avisar or (lambda texto: None)
         self.relogio = relogio
         self.numeros = {}            # id do jogador (X-Jogador) -> numero de cacador (fica de uma cacada para outra)
-        self._proximo_numero = 1
+        self._proximo_numero = primeiro_numero
         self._eventos = deque(maxlen=300)
         self._proximo_evento = 1
         self._avisos = []

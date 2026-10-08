@@ -2,7 +2,7 @@
 
 import customtkinter as ctk
 
-from core import api, turma
+from core import api, demo, turma
 from interface import ajuda, janelas, tarefas, tema
 from interface.som_da_turma import JanelaSom, SomDaTurma
 from interface.telas.batalha import TelaBatalha
@@ -33,11 +33,16 @@ MENU = [
 ]
 
 
+COR_DEMO = "#7B5CC4"
+
+
 class AppAluno(ctk.CTk):
-    def __init__(self):
+    def __init__(self, demo=None):
+        """demo = (token, endereco) quando o painel do professor abriu o modo demonstracao 🎓 (core/demo.py)."""
         ctk.set_appearance_mode("dark")
         super().__init__()
-        self.title("Dragon Ball Dex")
+        self.demo = demo
+        self.title("Dragon Ball Dex — 🎓 Modo demonstração" if demo else "Dragon Ball Dex")
         janelas.colocar_icone(self)
         self.configure(fg_color=tema.FUNDO)
         janelas.abrir_janela_principal(self, 1240, 780)
@@ -60,7 +65,13 @@ class AppAluno(ctk.CTk):
         self.area = ctk.CTkFrame(self, fg_color="transparent", corner_radius=0)
         self.area.grid(row=0, column=1, sticky="nsew")
         self.aviso = ctk.CTkLabel(self, text="", height=30, corner_radius=8, font=tema.fonte(13, negrito=True))
-        self.mostrar_conexao()
+        if demo:
+            ctk.CTkLabel(self.area, text="🎓 MODO DEMONSTRAÇÃO: nada aqui vale pontos nem aparece para os alunos",
+                         font=tema.fonte(14, negrito=True), fg_color=COR_DEMO, text_color="#FFFFFF",
+                         height=32).pack(fill="x")         # a faixa fica sempre por cima das telas
+            self.conectar_demo()
+        else:
+            self.mostrar_conexao()
         self.after(1000, self.conferir_avisos)
 
     # ---------------- menu lateral ----------------
@@ -99,7 +110,10 @@ class AppAluno(ctk.CTk):
         self.rotulo_conexao.pack(fill="x", pady=(2, 8))
         botoes = ctk.CTkFrame(rodape, fg_color="transparent")
         botoes.pack(fill="x")
-        tema.botao_secundario(botoes, "Trocar conexão", self.mostrar_conexao, largura=126).pack(side="left")
+        if self.demo:                            # no ensaio nao da para trocar de servidor: so sair
+            tema.botao_secundario(botoes, "Sair do demo", self.destroy, largura=126).pack(side="left")
+        else:
+            tema.botao_secundario(botoes, "Trocar conexão", self.mostrar_conexao, largura=126).pack(side="left")
         tema.botao_secundario(botoes, "🔊", lambda: JanelaSom(self), largura=40).pack(side="right")   # som
 
     def _rolagem_do_menu(self):
@@ -160,11 +174,31 @@ class AppAluno(ctk.CTk):
         self.tela_atual = None
         self._trocar_para(TelaConexao(self))
 
+    def conectar_demo(self):
+        """Modo demonstracao: entra sozinho no servidor deste PC, com o token (sem a tela de conexao)."""
+        token, endereco = self.demo
+        demo.ativar(token)
+        api.definir_aluno(demo.NOME)
+        self.habilitar_menu(False)
+        self.mostrar_aviso("🎓 Abrindo o modo demonstração...", tema.TEXTO_SECUNDARIO)
+
+        def entrar():
+            turma.verificar_servidor(endereco)
+            api.usar_servidor(endereco)
+            turma.entrar(demo.NOME)
+
+        tarefas.em_segundo_plano(self, entrar, lambda _: self.conectado(demo.NOME, endereco),
+                                 lambda erro: self.mostrar_aviso(f"Não consegui abrir o modo demonstração ({erro}). "
+                                                                 "Feche e clique em 🎓 no painel de novo.",
+                                                                 tema.PERIGO))
+
     def conectado(self, nome, endereco):
         """Chamado pela tela de conexao. endereco=None: internet direto."""
         self.nome_do_aluno = nome
         self.rotulo_aluno.configure(text=f"👤 {nome}")
-        if endereco:
+        if self.demo:
+            self.rotulo_conexao.configure(text=f"● Modo demonstração\n{endereco}", text_color="#B79CF2")
+        elif endereco:
             self.rotulo_conexao.configure(text=f"● Servidor da sala\n{endereco}", text_color=tema.SUCESSO)
         else:
             self.rotulo_conexao.configure(text="● Internet direta\n(sem placar da turma)",

@@ -26,7 +26,9 @@ GUIA = [
      ["Quando um colega te desafiar, aparece uma janela na hora, em qualquer tela.",
       "O número ao lado do Chat, como \"💬 Chat (3)\", mostra quantas mensagens novas chegaram.",
       "Apareceu \"Sem conexão: usando dados salvos\"? O app continua funcionando com o que já baixou. Avise o "
-      "professor."]),
+      "professor.",
+      "O botão 🔊 lá embaixo, no menu, liga ou desliga o som dos gritos de guerra e muda o volume (vale só para "
+      "este computador)."]),
 
     ("personagens", "🔎 Personagens",
      "Conhecer os personagens: foto, raça, afiliação e poder (ki).",
@@ -110,7 +112,9 @@ GUIA = [
       "Juntou as 7? Você invoca o dragão e escolhe um pedido, que aparece no telão!"],
      ["O código é pessoal: o código de um colega não vale para você.",
       "Errou o código? Espere 2 segundos para tentar de novo.",
-      "Travou? O professor pode mandar uma dica extra. Ela aparece nesta tela, em azul."]),
+      "Travou? O professor pode mandar uma dica extra. Ela aparece nesta tela, em azul.",
+      "Na esfera 4 pode aparecer o mapa do radar: cada clique numa casa faz o MESMO pedido "
+      "/esferas/radar?cacador=...&x=...&y=... que você faria no navegador (ele mostra o pedido embaixo do mapa)."]),
 
     ("conquista", "🗺 Conquista de Territórios",
      "Um torneio no mapa da galáxia: cada aluno começa com um planeta e tenta conquistar os dos colegas. Quem tiver "
@@ -121,7 +125,9 @@ GUIA = [
       "Clique em \"⚔ Invadir\" e escolha o seu lutador. Quem decide a luta é o servidor: você assiste e pode usar "
       "\"Transformar! ⚡\".",
       "Venceu? O planeta é seu e ganha um escudo 🛡 por alguns segundos. Perdeu? O Guardião ficou com ele.",
-      "Acompanhe o ranking e o \"Acontecendo agora\" do lado do mapa."],
+      "Acompanhe o ranking e o \"Acontecendo agora\" do lado do mapa.",
+      "Monte o seu 📣 Grito de guerra: uma frase e, se quiser, o link DIRETO de um áudio (.mp3, .wav ou .ogg). Ele "
+      "toca quando você invade e, para a turma toda, quando você conquista um planeta."],
      ["Os avisos de erro ensinam Redes: 409 = o planeta está ocupado (alguém já está invadindo, ou ele tem "
       "escudo); 429 = calma, espere alguns segundos para invadir de novo; 403 = esse planeta já é seu.",
       "Se dois alunos clicarem no mesmo planeta ao mesmo tempo, o servidor deixa só UM passar.",

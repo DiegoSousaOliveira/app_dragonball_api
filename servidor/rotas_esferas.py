@@ -21,6 +21,7 @@ from html import escape
 from urllib.parse import unquote
 
 from core import esferas
+from servidor import mundo_demo
 from servidor.placar import DadoInvalido
 
 JSON = "application/json; charset=utf-8"
@@ -263,7 +264,9 @@ def ao_receber_udp(app, dados, remetente):
     grito = esferas.ler_grito(dados)
     if grito is None:
         return None
-    return esferas.montar_resposta_grito(app.cacada.grito(*grito))
+    ip = remetente[0] if remetente else ""
+    mundo = mundo_demo.mundo_do_grito(app, ip, grito[0])                # 901+ do proprio PC: o ensaio 🎓
+    return esferas.montar_resposta_grito(mundo.cacada.grito(*grito))
 
 
 def iniciar_cacada(app, minutos=None):

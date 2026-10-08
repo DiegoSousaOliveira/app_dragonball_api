@@ -21,17 +21,22 @@ class Monitor:
         self.bytes_enviados = 0
         self.inicio = time.time()
 
-    def registrar(self, ip, aluno, metodo, caminho, status, ms, tamanho):
+    def registrar(self, ip, aluno, metodo, caminho, status, ms, tamanho, demo=False):
+        """demo=True: pedido do modo demonstracao 🎓 (aparece marcado e NAO conta como aluno conectado)."""
         agora = time.time()
         with self._trava:
-            self._pedidos.append({
+            pedido = {
                 "hora": datetime.now().strftime("%H:%M:%S"), "ip": ip, "aluno": aluno,
                 "metodo": metodo, "caminho": caminho, "status": status, "ms": ms, "bytes": tamanho,
-            })
+            }
+            if demo:
+                pedido["demo"] = True
+            self._pedidos.append(pedido)
             self._marcas.append(agora)
             self.total_pedidos += 1
             self.bytes_enviados += tamanho
-            self._atualizar_aluno(ip, aluno, agora, contar=True)
+            if not demo:
+                self._atualizar_aluno(ip, aluno, agora, contar=True)
 
     def aluno_entrou(self, ip, nome):
         with self._trava:
