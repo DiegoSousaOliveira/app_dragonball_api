@@ -48,7 +48,7 @@ ESFERAS = {
                  "ganha a esfera ao abrir a tela 🐉 Esferas."},
     2: {"conceito": "User-Agent",
         "dica": "O servidor da sala também conversa com navegadores! Abra o Chrome ou o Edge, digite "
-                "http://{endereco} e procure algo escondido na página. 🕵️",
+                "http://{endereco} e procure algo escondido na página. 🕵",
         "aprendeu": "Todo programa que fala HTTP se apresenta no cabeçalho User-Agent. O servidor percebeu "
                     "que era um navegador, e não o app!",
         "extra": "💡 Esfera 2: no navegador, abra http://{endereco} e olhe o fim da página: tem um link bem "
@@ -63,7 +63,7 @@ ESFERAS = {
     4: {"conceito": "Query string",
         "dica": "O Radar do Dragão diz se você está perto! No navegador, abra "
                 "http://{endereco}/esferas/radar?cacador={numero}&x=5&y=5 e vá mudando x e y (de 0 a 10) "
-                "até achar a esfera. ❄️ Frio... 🔥 Quente!",
+                "até achar a esfera. ❄ Frio... 🔥 Quente!",
         "aprendeu": "O que vem depois do ? na URL é a query string: são os parâmetros do pedido. Quando eles "
                     "estão errados, o servidor responde 400 (pedido mal feito).",
         "extra": "💡 Esfera 4: tudo depois do ? na URL é a query string. Mude só o x até esquentar; depois, "

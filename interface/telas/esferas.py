@@ -318,7 +318,9 @@ class TelaEsferas(Tela):
         self.titulo_dica.configure(text=titulo)
         self.texto_dica.configure(text=texto)
         extra = dica["extra"] if dica else ""
-        self.extra.configure(text=f"Dica extra do professor: {extra}" if extra else "")
+        if extra.startswith("💡 Esfera"):                # "💡 Esfera 4: ..." -> so o texto (o titulo ja diz qual)
+            extra = extra.split(": ", 1)[-1]
+        self.extra.configure(text=f"💡 Dica extra do professor: {extra}" if extra else "")
 
     # ---------------- resgatar um codigo ----------------
 

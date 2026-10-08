@@ -37,7 +37,7 @@ from servidor import rotas_esferas
 from servidor.chat import Proibido
 from servidor.placar import DadoInvalido
 
-VERSAO = "2.2"
+VERSAO = "2.3"
 TAMANHO_MAXIMO_DO_CORPO = 10_000         # bytes: ninguem precisa mandar mais que isso
 
 

@@ -45,3 +45,24 @@
 | 31 | Limites: 200 caracteres, 1 mensagem a cada 1,5 s, caracteres de controle removidos; o app nunca recebe o código dos outros alunos (só "minha: sim/não"). | Contra spam e para ninguém se passar por outro. |
 | 32 | As mensagens ficam só na memória (as últimas 300) e somem quando o servidor desliga. | Privacidade: não fica histórico de conversa de alunos gravado no computador. |
 | 33 | O painel esconde, por padrão, as consultas automáticas (sala, chat, duelo, placar) da lista "Pedidos ao vivo". | Com 30 alunos seriam ~50 pedidos por segundo; uma caixinha mostra tudo quando o professor quiser explicar o polling. |
+
+## Versão 2.3 (Caça às Esferas)
+
+Plano completo e a lista de ganchos nos arquivos antigos: `docs/PLANO_ESFERAS.md`.
+
+| # | Decisão | Por quê |
+|---|---|---|
+| 34 | Tudo da caçada em **arquivos novos** (`core/esferas.py`, `core/esferas_cliente.py`, `servidor/rotas_esferas.py`, `interface/aba_cacada.py`, `interface/efeito_dragao.py`, `interface/desenho_esfera.py`, `interface/telas/esferas.py`); nos antigos, só ganchos de 1 a 5 linhas. A caçada nasce **desligada**. | Não quebrar nada do que já funciona: sem clicar em "Iniciar caçada", o comportamento é o da 2.2 (a página `/` fica byte a byte igual, e há um teste para isso). |
+| 35 | Código pessoal = **HMAC-SHA256**(segredo da caçada, `"numero:esfera"`) → 5 letras de `23456789ABCDEFGHJKMNPQRSTUVWXYZ`. | Copiar o código do colega não serve, e ninguém calcula o código sem o segredo. Sem 0/O e 1/I/L: ninguém confunde ao digitar. |
+| 36 | **Número de caçador** dado na largada (quem está online) ou no primeiro pedido `/esferas/...`, mantido até desligar o servidor. | Não mexer em `POST /turma/entrar`. O número é público (vai na URL) e o `X-Jogador` continua secreto. |
+| 37 | O caçador é identificado pelo `X-Jogador` (app) **ou** por `?cacador=<n>` (navegador e terminal). | Navegador e curl não mandam `X-Jogador`. E `?cacador=7&x=5&y=5` vira um bom exemplo de query string. |
+| 38 | Esfera 2 = User-Agent com `Mozilla` e **sem** `DragonBallDex`, `python-requests`, `PowerShell` e `curl`. Esfera 7 = `curl/...` ou `PowerShell`. | O app manda `DragonBallDex/2.0` (não `python-requests`), e o PowerShell também diz `Mozilla`. |
+| 39 | Status: **409** com a caçada parada (o `/esferas/estado` manda os dados juntos), **429** para "espere 2 s", **403** para "código de outro caçador", **400** para código errado ou URL incompleta, **404 com corpo** na caverna. | Cada status ensina alguma coisa. A tela Esferas mostra o progresso mesmo com a caçada pausada. |
+| 40 | O grito usa a **mesma porta UDP 50505** da descoberta, com outro prefixo (`DBDEX-ESFERA`). A resposta **não é JSON puro**. O gancho na descoberta fica dentro de `try/except`. | Dois sockets na mesma porta não funcionam de forma confiável no Windows. Um app 2.2 que recebesse a resposta cairia no `except ValueError` e ignoraria; e a resposta vai só para o socket de quem gritou. |
+| 41 | Plano B do grito: a 💡 dica extra 6 libera no app a opção **unicast** (direto para o IP do servidor). | Uma dica sozinha não faz o broadcast passar numa rede que bloqueia. E broadcast × unicast vira assunto de aula. |
+| 42 | As dicas aparecem em sequência, mas o **resgate não exige ordem**. | Quem travar numa esfera (ex.: rede sem broadcast) não fica preso. |
+| 43 | Avisos para a turma com `chat.mensagem_do_professor()`, chamada **fora da trava** da caçada. | Sem rota nova e sem polling novo (o aviso já chega pelo contador do chat). Fora da trava, o chat nunca espera a caçada. |
+| 44 | O efeito do 1º lugar dura **pelo menos 8 s e espera o pedido** (até 30 s); um clique fecha. Os seguintes ganham um aviso menor. Sem desenho do dragão: só as esferas, o flash e o texto. | A turma assiste à escolha do pedido. Não usamos imagem de personagem. |
+| 45 | A grade do painel é um `Canvas` que **ajusta a altura das linhas** para caber todos os alunos; o botão **⛶ Telão** mostra a mesma grade em tela cheia. | A coluna do meio do painel tem ~600 px: estreita para 15 alunos no projetor. |
+| 46 | Resultado em CSV com `;` e UTF-8 com BOM, em `%LOCALAPPDATA%\DragonBallDex\cacadas\`. | O Excel em português abre certinho, com acentos. |
+| 47 | Resposta da esfera 7 só em **ASCII** (sem acento nem emoji) quando o cliente é um terminal. | O `cmd` mostra o UTF-8 todo embaralhado. |

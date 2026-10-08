@@ -2,6 +2,9 @@
 
 > 07/10/2026 · branch `cacada-esferas` (a `main` / tag `v2.2.0` continua com a versão que funciona).
 > Antes de começar: **48 testes passando** (`python tests/rodar_testes.py`, Python 3.14 do `.venv`).
+>
+> **Situação: implementado (tag `v2.3.0`), 78 testes passando.** Todas as decisões da seção 9 foram aprovadas como
+> propostas; na 9 (menu com 9 itens), os botões antigos não foram mexidos. Como usar: README, seção 4.
 
 A caçada é um **acréscimo desligado por padrão**: sem clicar em "🐉 Iniciar caçada", o app e o servidor se comportam
 exatamente como na 2.2. Todo o código novo fica em arquivos novos; nos arquivos existentes entram só **ganchos** de 1 a
