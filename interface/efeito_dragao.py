@@ -1,7 +1,8 @@
 """
 O que aparece no telao durante a Caca as Esferas:
   - EfeitoDragao: tela cheia quando o 1o aluno junta as 7 esferas (fundo escurece, esferas girando e brilhando,
-    flash de luz, "O DRAGAO FOI INVOCADO!", o nome do aluno e o pedido). Sem desenho do dragao: so as esferas.
+    flash de luz, o dragao nascendo das esferas, "O DRAGAO FOI INVOCADO!", o nome do aluno e o pedido).
+    O dragao e um desenho proprio feito com formas do Canvas (interface/desenho_dragao.py), sem imagem de fora.
   - AvisoNoTelao: uma faixa no alto da tela por alguns segundos ("Bruno tambem invocou o dragao!").
   - Som: bipes com o winsound (so existe no Windows; em outro sistema fica mudo).
 """
@@ -12,6 +13,7 @@ import time
 import tkinter as tk
 
 from interface import tema
+from interface.desenho_dragao import desenhar_dragao
 from interface.desenho_esfera import desenhar_esfera, misturar
 
 try:
@@ -24,6 +26,7 @@ DURACAO_MINIMA = 8                  # segundos de efeito, no minimo
 DEPOIS_DO_PEDIDO = 3.5              # segundos mostrando o pedido escolhido
 DURACAO_MAXIMA = 45                 # seguranca: fecha sozinho mesmo se o pedido nunca chegar
 FLASH = 2.4                         # segundo em que acontece o clarao
+TEXTOS_DEPOIS = 1.6                 # segundos depois do clarao (o dragao aparece primeiro)
 PRETO = "#000000"
 AMARELO = tema.DESTAQUE
 
@@ -132,9 +135,6 @@ class EfeitoDragao(tk.Toplevel):
         if self.fechando is None:
             self.fechando = time.time()
 
-    def _fonte(self, fracao, negrito=True):
-        return (tema.escolher_fonte(), -max(14, int(self.altura * fracao)), "bold" if negrito else "normal")
-
     def desenhar(self):
         if not self.winfo_exists():
             return
@@ -154,47 +154,63 @@ class EfeitoDragao(tk.Toplevel):
             if self.ao_fechar:
                 self.ao_fechar()
             return
-        c, w, h = self.canvas, self.largura, self.altura
-        c.delete("all")
-        # o clarao: o fundo fica branco e volta ao preto em meio segundo
-        if FLASH <= t < FLASH + 0.5:
-            fundo = misturar("#FFFFFF", PRETO, (t - FLASH) / 0.5)
-        else:
-            fundo = PRETO
-        c.configure(bg=fundo)
-        # as 7 esferas girando: no comeco, em roda no meio da tela; depois do clarao, sobem para dar lugar ao texto
-        mudanca = min(1.0, max(0.0, (t - FLASH) / 0.8))
-        centro_y = h * (0.5 - 0.26 * mudanca)
-        raio_da_roda = h * (0.27 - 0.13 * mudanca) * min(1.0, 0.3 + t / 1.2)
-        velocidade = 0.6 + 2.6 * min(1.0, t / FLASH) if t < FLASH else 0.5
-        angulo_base = t * velocidade
-        tamanho = h * (0.06 - 0.012 * mudanca)
-        brilho = 0.55 + 0.45 * math.sin(t * 6)
-        for i in range(7):
-            angulo = angulo_base + i * 2 * math.pi / 7
-            x = w / 2 + raio_da_roda * math.cos(angulo)
-            y = centro_y + raio_da_roda * math.sin(angulo)
-            desenhar_esfera(c, x, y, tamanho, i + 1, brilho=brilho, fundo=fundo, giro=t * 0.8)
-        if t < FLASH:
-            return self.after(QUADRO, self.desenhar)
-        # os textos aparecem depois do clarao
-        cor_titulo = misturar(AMARELO, "#FFFFFF", 0.5 + 0.5 * math.sin(t * 4))
-        c.create_text(w / 2, h * 0.52, text="O DRAGÃO FOI INVOCADO!", fill=cor_titulo, font=self._fonte(0.085))
-        c.create_text(w / 2, h * 0.62, text=self.nome, fill="#FFFFFF", font=self._fonte(0.06))
-        if self.pedido is None:
-            restante = max(0, 30 - int(t))
-            c.create_text(w / 2, h * 0.705, text=f"está escolhendo o pedido...  {restante}",
-                          fill=tema.TEXTO_SECUNDARIO, font=self._fonte(0.03, negrito=False))
-        else:
-            c.create_text(w / 2, h * 0.705, text="pediu:", fill=tema.TEXTO_SECUNDARIO,
-                          font=self._fonte(0.03, negrito=False))
-        for posicao, (numero, texto) in enumerate(self.opcoes.items()):
-            y = h * (0.775 + 0.065 * posicao)
-            if self.pedido is None:
-                cor, fonte = "#9A9DA3", self._fonte(0.032, negrito=False)
-            elif self.pedido == numero:
-                cor, fonte, texto = AMARELO, self._fonte(0.042), f"✔  {texto}"
-            else:
-                cor, fonte = "#4A4D52", self._fonte(0.028, negrito=False)
-            c.create_text(w / 2, y, text=texto, fill=cor, font=fonte)
+        desenhar_cena(self.canvas, self.largura, self.altura, t, self.nome, self.opcoes, self.pedido)
         self.after(QUADRO, self.desenhar)
+
+
+def _fonte(altura, fracao, negrito=True):
+    return (tema.escolher_fonte(), -max(14, int(altura * fracao)), "bold" if negrito else "normal")
+
+
+def _suave(x):
+    """0 a 1, comecando rapido e terminando devagar."""
+    x = min(1.0, max(0.0, x))
+    return 1 - (1 - x) ** 2
+
+
+def desenhar_cena(c, w, h, t, nome, opcoes, pedido):
+    """Um quadro do efeito, t segundos depois do comeco (separado da janela para dar para testar)."""
+    c.delete("all")
+    # o clarao: o fundo fica branco e volta ao preto em meio segundo
+    if FLASH <= t < FLASH + 0.5:
+        fundo = misturar("#FFFFFF", PRETO, (t - FLASH) / 0.5)
+    else:
+        fundo = PRETO
+    c.configure(bg=fundo)
+    # depois do clarao, o dragao nasce de dentro das esferas e sobe serpenteando
+    progresso = (t - FLASH - 0.15) / 1.8
+    desenhar_dragao(c, w, h, _suave(progresso) if progresso < 1 else progresso, t, fundo)
+    # as 7 esferas girando: no comeco, uma roda grande no meio; depois do clarao, pequenas, aos pes do dragao
+    mudanca = _suave((t - FLASH) / 0.8)
+    centro_y = h * (0.5 - 0.10 * mudanca)
+    raio_da_roda = h * (0.27 - 0.195 * mudanca) * min(1.0, 0.3 + t / 1.2)
+    velocidade = 0.6 + 2.6 * min(1.0, t / FLASH) if t < FLASH else 0.7
+    angulo_base = t * velocidade
+    tamanho = h * (0.06 - 0.034 * mudanca)
+    brilho = 0.55 + 0.45 * math.sin(t * 6)
+    for i in range(7):
+        angulo = angulo_base + i * 2 * math.pi / 7
+        x = w / 2 + raio_da_roda * math.cos(angulo)
+        y = centro_y + raio_da_roda * math.sin(angulo)
+        desenhar_esfera(c, x, y, tamanho, i + 1, brilho=brilho, fundo=fundo, giro=t * 0.8)
+    if t < FLASH + TEXTOS_DEPOIS:
+        return
+    # os textos aparecem quando o dragao ja esta quase inteiro
+    cor_titulo = misturar(AMARELO, "#FFFFFF", 0.5 + 0.5 * math.sin(t * 4))
+    c.create_text(w / 2, h * 0.565, text="O DRAGÃO FOI INVOCADO!", fill=cor_titulo, font=_fonte(h, 0.075))
+    c.create_text(w / 2, h * 0.65, text=nome, fill="#FFFFFF", font=_fonte(h, 0.055))
+    if pedido is None:
+        restante = max(0, 30 - int(t))
+        c.create_text(w / 2, h * 0.725, text=f"está escolhendo o pedido...  {restante}",
+                      fill=tema.TEXTO_SECUNDARIO, font=_fonte(h, 0.028, negrito=False))
+    else:
+        c.create_text(w / 2, h * 0.725, text="pediu:", fill=tema.TEXTO_SECUNDARIO, font=_fonte(h, 0.028, negrito=False))
+    for posicao, (numero, texto) in enumerate(opcoes.items()):
+        y = h * (0.79 + 0.06 * posicao)
+        if pedido is None:
+            cor, fonte = "#9A9DA3", _fonte(h, 0.03, negrito=False)
+        elif pedido == numero:
+            cor, fonte, texto = AMARELO, _fonte(h, 0.04), f"✔  {texto}"
+        else:
+            cor, fonte = "#4A4D52", _fonte(h, 0.027, negrito=False)
+        c.create_text(w / 2, y, text=texto, fill=cor, font=fonte)

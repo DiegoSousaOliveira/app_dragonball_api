@@ -178,7 +178,8 @@ na 2.2.
 4. A tela Esferas mostra **uma dica de cada vez**: a dica seguinte aparece quando o aluno resgata a esfera da vez.
 5. A turma travou numa esfera? Clique em **💡 1** a **💡 7**. A dica extra vai como aviso do professor no chat e
    também aparece na tela Esferas de cada aluno.
-6. O **1º** a juntar as 7 dispara o efeito em tela cheia: "O DRAGÃO FOI INVOCADO!", com o nome do aluno e as 3 opções
+6. O **1º** a juntar as 7 dispara o efeito em tela cheia: as esferas giram, vem um clarão, o dragão sai das esferas e
+   aparece "O DRAGÃO FOI INVOCADO!", com o nome do aluno e as 3 opções
    de pedido, enquanto ele escolhe (até 30 s; sem escolha, vale a 1ª). Os seguintes aparecem num aviso menor no alto da
    tela. A turma toda recebe um aviso no chat ("🐉 Ana invocou o dragão!").
 7. Quando o tempo acaba (ou em **■ Encerrar**), o resultado vai para um arquivo CSV, que abre no Excel, em
