@@ -99,7 +99,8 @@ class ArenaBatalha(ctk.CTkFrame):
 class TelaBatalha(Tela):
     def __init__(self, app):
         super().__init__(app)
-        cabecalho(self, "Batalha", "Escolha dois lutadores (ou 🎲 para sortear). A vitória vai para o placar da turma!")
+        cabecalho(self, "Batalha", "Escolha dois lutadores (ou 🎲 para sortear). O vencedor entra no Hall da "
+                                  "Fama do telão.")
         self.nomes = sorted(p["name"] for p in app.personagens)
         self.criar_escolha()
         self.mensagem = ctk.CTkLabel(self, text="", font=tema.fonte(14, negrito=True))

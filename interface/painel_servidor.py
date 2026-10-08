@@ -8,12 +8,14 @@ import customtkinter as ctk
 
 from interface import janelas, tema
 from interface.aba_cacada import AbaCacada
+from interface.aba_conquista import AbaConquista
 
 ATUALIZAR_A_CADA = 1000          # milissegundos
 FONTE_MONO = ("Consolas", 12)
 
 
-CONSULTAS_AUTOMATICAS = ("/turma/sala", "/chat?", "/turma/partida/", "/turma/placar", "/esferas/estado")
+CONSULTAS_AUTOMATICAS = ("/turma/sala", "/chat?", "/turma/partida/", "/turma/placar", "/esferas/estado",
+                         "/conquista/estado")
 
 
 def eh_automatico(pedido):
@@ -90,6 +92,7 @@ class PainelServidor(ctk.CTk):
         caixa = abas.add("📡 Pedidos ao vivo")
         self.criar_aba_chat(abas.add("💬 Chat"))
         AbaCacada(abas.add("🐉 Caçada"), self.servidor).pack(fill="both", expand=True)   # interface/aba_cacada.py
+        AbaConquista(abas.add("🗺 Conquista"), self.servidor).pack(fill="both", expand=True)   # aba_conquista.py
         self.ver_automaticos = ctk.CTkCheckBox(caixa, text="Mostrar as consultas automáticas (os apps perguntam "
                                                            "\"tem novidade?\" a cada segundo)",
                                                font=tema.fonte(12), fg_color=tema.DESTAQUE)

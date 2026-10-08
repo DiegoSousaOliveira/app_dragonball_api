@@ -7,6 +7,7 @@ from interface import ajuda, janelas, tarefas, tema
 from interface.telas.batalha import TelaBatalha
 from interface.telas.chat import TelaChat
 from interface.telas.conexao import TelaConexao
+from interface.telas.conquista import TelaConquista
 from interface.telas.desafios import JanelaDesafioRecebido
 from interface.telas.duelo import TelaDueloBatalha, TelaDueloQuiz
 from interface.telas.esferas import TelaEsferas
@@ -26,6 +27,7 @@ MENU = [
     ("turma", "👥   Turma e duelos", TelaTurma),
     ("chat", "💬   Chat", TelaChat),
     ("esferas", "🐉   Esferas", TelaEsferas),
+    ("conquista", "🗺   Conquista", TelaConquista),
     ("rede", "📡   Rede", TelaRede),
 ]
 
@@ -69,23 +71,44 @@ class AppAluno(ctk.CTk):
         ctk.CTkLabel(lateral, text="🐉 DRAGON BALL", font=tema.fonte(20, negrito=True),
                      text_color=tema.DESTAQUE).pack(pady=(26, 0))
         ctk.CTkLabel(lateral, text="D  E  X", font=tema.fonte(15, negrito=True),
-                     text_color=tema.TEXTO_SECUNDARIO).pack(pady=(0, 24))
+                     text_color=tema.TEXTO_SECUNDARIO).pack(pady=(0, 18))
+        rodape = ctk.CTkFrame(lateral, fg_color="transparent")        # o rodape primeiro: ele nunca some
+        rodape.pack(side="bottom", fill="x", padx=14, pady=16)
+        # Os itens ficam numa area com rolagem: em telas pequenas (ex.: 1366x768 com escala 125%) o menu nao
+        # cabe inteiro; a barra de rolagem so aparece quando precisa.
+        self.area_do_menu = ctk.CTkScrollableFrame(lateral, fg_color="transparent", corner_radius=0)
+        self.area_do_menu.pack(fill="both", expand=True)
         self.botoes = {}
         for chave, texto, _ in MENU:
-            botao = ctk.CTkButton(lateral, text=texto, anchor="w", height=42, corner_radius=8,
+            botao = ctk.CTkButton(self.area_do_menu, text=texto, anchor="w", height=38, corner_radius=8,
                                   fg_color="transparent", hover_color=tema.CARD, text_color=tema.TEXTO,
                                   text_color_disabled="#5C5F66", font=tema.fonte(15, negrito=True),
                                   command=lambda c=chave: self.mostrar(c))
-            botao.pack(fill="x", padx=12, pady=2)
+            botao.pack(fill="x", padx=(4, 0), pady=1)
             self.botoes[chave] = botao
-        rodape = ctk.CTkFrame(lateral, fg_color="transparent")
-        rodape.pack(side="bottom", fill="x", padx=14, pady=16)
+        for parte in (self.area_do_menu, getattr(self.area_do_menu, "_parent_canvas", None)):
+            if parte is not None:      # o conteudo muda OU a janela encolhe: confere se a barra precisa aparecer
+                parte.bind("<Configure>", lambda evento: self.after_idle(self._rolagem_do_menu), add="+")
+        self.after(300, self._rolagem_do_menu)
         self.rotulo_aluno = ctk.CTkLabel(rodape, text="", font=tema.fonte(14, negrito=True), anchor="w")
         self.rotulo_aluno.pack(fill="x")
         self.rotulo_conexao = ctk.CTkLabel(rodape, text="● desconectado", anchor="w", justify="left",
                                            font=tema.fonte(12), text_color=tema.TEXTO_SECUNDARIO)
         self.rotulo_conexao.pack(fill="x", pady=(2, 8))
         tema.botao_secundario(rodape, "Trocar conexão", self.mostrar_conexao, largura=170).pack()
+
+    def _rolagem_do_menu(self):
+        """Mostra a barra de rolagem do menu so quando os itens nao cabem."""
+        try:
+            canvas, barra = self.area_do_menu._parent_canvas, self.area_do_menu._scrollbar
+            cabe = self.area_do_menu.winfo_reqheight() <= canvas.winfo_height() + 2
+            if cabe and barra.winfo_ismapped():
+                barra.grid_remove()
+                canvas.yview_moveto(0)
+            elif not cabe and not barra.winfo_ismapped():
+                barra.grid()
+        except Exception:
+            pass                         # se o CustomTkinter mudar por dentro, a barra so fica sempre visivel
 
     def habilitar_menu(self, ligado):
         for botao in self.botoes.values():
@@ -203,12 +226,13 @@ class AppAluno(ctk.CTk):
         if botao is not None:
             botao.configure(text=f"💬   Chat ({nao_lidas})" if nao_lidas > 0 else "💬   Chat")
 
-    def abrir_duelo(self, partida):
+    def abrir_duelo(self, partida, classe=None):
+        """classe: outra tela de luta (ex.: a invasao da Conquista); sem ela, o duelo de batalha ou de quiz."""
         for janela in self.winfo_children():           # fecha avisos de desafio que estavam abertos
             if isinstance(janela, ctk.CTkToplevel) and "desafi" in janela.title().lower():
                 janela.destroy()
         self.desafio_enviado = None
-        classe = TelaDueloBatalha if partida["tipo"] == "batalha" else TelaDueloQuiz
+        classe = classe or (TelaDueloBatalha if partida["tipo"] == "batalha" else TelaDueloQuiz)
         self.duelo_atual = classe(self, partida["id"])
         self.habilitar_menu(False)
         self.marcar_botao(None)
@@ -219,7 +243,7 @@ class AppAluno(ctk.CTk):
         duelo = self.duelo_atual
         self.duelo_atual = None
         self.habilitar_menu(True)
-        self.mostrar("turma")
+        self.mostrar(getattr(duelo, "VOLTAR_PARA", "turma"))    # a invasao volta para a Conquista
         if duelo is not None:
             duelo.destroy()
 

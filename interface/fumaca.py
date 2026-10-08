@@ -66,6 +66,7 @@ def rodar(endereco=None):
         (3000, "turma", lambda: app.mostrar("turma")),
         (2000, "chat", lambda: app.mostrar("chat")),
         (2000, "esferas", lambda: app.mostrar("esferas")),
+        (2000, "conquista", lambda: app.mostrar("conquista")),
         (2000, "rede", lambda: app.mostrar("rede")),
         (1500, "ajuda", lambda: [ajuda.abrir_ajuda(app, chave) for chave, *_ in ajuda.GUIA][-1].fechar()),
         (2000, "fim", app.destroy),

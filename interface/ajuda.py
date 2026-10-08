@@ -112,6 +112,21 @@ GUIA = [
       "Errou o código? Espere 2 segundos para tentar de novo.",
       "Travou? O professor pode mandar uma dica extra. Ela aparece nesta tela, em azul."]),
 
+    ("conquista", "🗺 Conquista de Territórios",
+     "Um torneio no mapa da galáxia: cada aluno começa com um planeta e tenta conquistar os dos colegas. Quem tiver "
+     "mais planetas no fim vence. Só funciona quando o professor começa a Conquista.",
+     ["Escolha o seu 🛡 Guardião: ele defende TODOS os seus planetas quando alguém invade, mesmo com o seu app "
+      "fechado.",
+      "Clique num planeta do mapa para escolher o alvo (os seus planetas têm um anel amarelo).",
+      "Clique em \"⚔ Invadir\" e escolha o seu lutador. Quem decide a luta é o servidor: você assiste e pode usar "
+      "\"Transformar! ⚡\".",
+      "Venceu? O planeta é seu e ganha um escudo 🛡 por alguns segundos. Perdeu? O Guardião ficou com ele.",
+      "Acompanhe o ranking e o \"Acontecendo agora\" do lado do mapa."],
+     ["Os avisos de erro ensinam Redes: 409 = o planeta está ocupado (alguém já está invadindo, ou ele tem "
+      "escudo); 429 = calma, espere alguns segundos para invadir de novo; 403 = esse planeta já é seu.",
+      "Se dois alunos clicarem no mesmo planeta ao mesmo tempo, o servidor deixa só UM passar.",
+      "Ninguém é eliminado: quem perdeu tudo continua invadindo."]),
+
     ("rede", "📡 Rede",
      "O \"raio-X\" da conexão: mostra o que acontece por baixo quando o app conversa com o servidor. Ela tem 5 abas:",
      ["Conexão: o seu IP, o IP e a porta do servidor e o caminho que cada pedido faz.",
@@ -139,7 +154,8 @@ GUIA = [
 # Qual secao do guia cada tela abre (pelo nome da classe da tela)
 TELAS = {"TelaPersonagens": "personagens", "TelaBatalha": "batalha", "TelaPlanetas": "planetas",
          "TelaRanking": "ranking", "TelaQuiz": "quiz", "TelaTurma": "turma", "TelaDueloBatalha": "turma",
-         "TelaDueloQuiz": "turma", "TelaChat": "chat", "TelaEsferas": "esferas", "TelaRede": "rede"}
+         "TelaDueloQuiz": "turma", "TelaChat": "chat", "TelaEsferas": "esferas", "TelaConquista": "conquista",
+         "TelaInvasao": "conquista", "TelaRede": "rede"}
 
 _janela_aberta = None          # so uma janela do guia por vez
 
