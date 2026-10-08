@@ -16,3 +16,6 @@ dist_instalador/
 backup_*.zip
 
 # ATENCAO: cache/imagens/ e dados/ NAO sao ignorados: o instalador precisa deles.
+
+# Arquivos que o programa grava quando roda pelo codigo-fonte (nome do aluno, placar, caçadas)
+dados_usuario/
