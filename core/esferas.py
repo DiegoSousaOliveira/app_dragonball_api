@@ -64,6 +64,11 @@ ESFERAS = {
         "dica": "O Radar do Dragão diz se você está perto! No navegador, abra "
                 "http://{endereco}/esferas/radar?cacador={numero}&x=5&y=5 e vá mudando x e y (de 0 a 10) "
                 "até achar a esfera. ❄ Frio... 🔥 Quente!",
+        # com o "Mapa do radar" liberado pelo professor, a dica cita as duas formas (o mapa faz o mesmo pedido)
+        "dica_mapa": "O Radar do Dragão diz se você está perto! Clique nas casas do mapa do radar aqui embaixo "
+                     "(ou use as setas e Enter). Cada clique vira o pedido "
+                     "/esferas/radar?cacador={numero}&x=...&y=... · No navegador também funciona: "
+                     "http://{endereco}/esferas/radar?cacador={numero}&x=5&y=5",
         "aprendeu": "O que vem depois do ? na URL é a query string: são os parâmetros do pedido. Quando eles "
                     "estão errados, o servidor responde 400 (pedido mal feito).",
         "extra": "💡 Esfera 4: tudo depois do ? na URL é a query string. Mude só o x até esquentar; depois, "
@@ -299,6 +304,7 @@ class Cacada:
         self.pausada_em = None
         self.concluidos = 0
         self.dicas_extras = set()
+        self.radar_no_app = getattr(self, "radar_no_app", True)   # interruptor do painel (sobrevive a "Nova caçada")
         self.resultado_salvo = None  # caminho do CSV, depois de encerrar
 
     @contextmanager
@@ -589,7 +595,8 @@ class Cacada:
         dica = None
         if proxima is not None and self.estado != "aguardando":
             dica = {"esfera": proxima, "estrelas": "★" * proxima, "conceito": ESFERAS[proxima]["conceito"],
-                    "texto": preencher(ESFERAS[proxima]["dica"], endereco, cacador.numero),
+                    "texto": preencher(ESFERAS[proxima]["dica_mapa" if proxima == 4 and self.radar_no_app
+                                                     else "dica"], endereco, cacador.numero),
                     "extra": preencher(ESFERAS[proxima]["extra"], endereco, cacador.numero)
                     if proxima in self.dicas_extras else ""}
         ultima = max(cacador.achadas, key=cacador.achadas.get) if cacador.achadas else None
@@ -613,6 +620,7 @@ class Cacada:
             "ultima": {"esfera": ultima, "aprendeu": ESFERAS[ultima]["aprendeu"]} if ultima else None,
             "dica": dica,
             "grito_direto": 6 in self.dicas_extras,
+            "radar_no_app": self.radar_no_app,
             "tempo_restante": self._tempo_restante(agora),
             "pontos": cacador.pontos(),
             "colocacao": classificacao.index(cacador) + 1 if cacador in classificacao else None,

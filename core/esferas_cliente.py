@@ -1,5 +1,6 @@
 """O lado do aluno na Caca as Esferas: conversa com as rotas /esferas/ (HTTP) e grita na rede (UDP)."""
 
+import re
 import socket
 import time
 
@@ -9,6 +10,7 @@ from core import api, descoberta, esferas
 from core.turma import SemServidor
 
 TEMPO_LIMITE = 4          # segundos
+CODIGO = re.compile(r"ESF-[A-Z0-9]{5}")
 
 
 class SemCacada(api.ErroDeApi):
@@ -114,3 +116,51 @@ def gritar(numero, palavra, direto=False, espera=1.5):
     finally:
         sock.close()
     return reserva
+
+
+# ---------------- o mapa do radar (esfera 4) ----------------
+# O mapa e so um cliente mais amigavel da MESMA rota que o aluno pode abrir no navegador: cada clique vira
+# exatamente o pedido GET /esferas/radar?cacador=7&x=5&y=5 (com a query string na mesma ordem).
+
+FAIXAS = {esferas.temperatura(1): "fervendo", esferas.temperatura(3): "quente",
+          esferas.temperatura(6): "morno", esferas.temperatura(7): "frio"}
+
+
+def url_do_radar(numero, x, y):
+    """O caminho com a query string, igualzinho ao que se digita no navegador."""
+    return f"/esferas/radar?cacador={int(numero)}&x={int(x)}&y={int(y)}"
+
+
+def ler_radar(texto):
+    """A resposta do radar -> ("achou", "ESF-XXXXX") ou ("temperatura", "frio"|"morno"|"quente"|"fervendo")."""
+    achado = CODIGO.search(texto or "")
+    if achado:
+        return "achou", achado.group(0)
+    for inicio, faixa in FAIXAS.items():
+        if (texto or "").startswith(inicio):
+            return "temperatura", faixa
+    return "erro", (texto or "").strip().splitlines()[0] if texto and texto.strip() else "Resposta estranha"
+
+
+def escanear_radar(numero, x, y):
+    """Faz a varredura numa casa. Devolve {"pedido", "status", "tipo", "valor"} (tipo: achou, temperatura, erro)."""
+    caminho = url_do_radar(numero, x, y)
+    resposta = _pedir("GET", caminho)
+    tipo, valor = ler_radar(resposta.text) if resposta.status_code == 200 else ("erro", resposta.text.strip())
+    return {"pedido": f"GET {caminho}", "status": resposta.status_code, "tipo": tipo, "valor": valor}
+
+
+class HistoricoDoRadar:
+    """As casas ja escaneadas e a temperatura de cada uma (o mapa pinta o "calor" se formando)."""
+
+    def __init__(self):
+        self.casas = {}              # (x, y) -> "frio" | "morno" | "quente" | "fervendo" | "achou"
+        self.tentativas = 0
+
+    def registrar(self, x, y, resultado):
+        if resultado["tipo"] in ("temperatura", "achou"):
+            self.tentativas += 1
+            self.casas[(x, y)] = resultado["valor"] if resultado["tipo"] == "temperatura" else "achou"
+
+    def faixa(self, x, y):
+        return self.casas.get((x, y))

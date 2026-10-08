@@ -219,6 +219,12 @@ class AbaCacada(ctk.CTkFrame):
         self.botao_som = tema.botao_secundario(linha, "🔊 Som", self.trocar_som, largura=90)
         self.botao_som.pack(side="left")
         tema.botao(linha, "⛶ Telão", self.abrir_telao, largura=100).pack(side="left", padx=6)
+        # Desligado: a turma pratica a query string na barra de endereco (o mapa do app some da tela Esferas)
+        self.chave_radar = ctk.CTkSwitch(linha, text="Mapa do radar no app", font=tema.fonte(12),
+                                         progress_color=tema.SUCESSO, command=self.trocar_radar)
+        if self.cacada.radar_no_app:
+            self.chave_radar.select()
+        self.chave_radar.pack(side="left", padx=6)
 
     def criar_rodape(self):
         linha = ctk.CTkFrame(self, fg_color="transparent")
@@ -369,6 +375,9 @@ class AbaCacada(ctk.CTkFrame):
     def mandar_dica(self, esfera):
         endereco = self.servidor.enderecos()[0]
         self.cacada.dica_extra(esfera, endereco)
+
+    def trocar_radar(self):
+        self.cacada.radar_no_app = bool(self.chave_radar.get())
 
     def trocar_som(self):
         self.som.mudo = not self.som.mudo

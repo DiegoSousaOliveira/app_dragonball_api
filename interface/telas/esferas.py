@@ -2,12 +2,14 @@
 digita os codigos que encontrar pela rede e grita a palavra magica (UDP). So existe com o servidor da sala."""
 
 import math
+import time
 
 import customtkinter as ctk
 
 from core import api, esferas_cliente
 from interface import janelas, tarefas, tema
 from interface.desenho_esfera import desenhar_esfera
+from interface.radar import MapaDoRadar
 from interface.telas import Tela, cabecalho
 
 PERGUNTAR_A_CADA = 1500       # milissegundos (so enquanto a tela esta aberta)
@@ -147,6 +149,10 @@ class TelaEsferas(Tela):
                                      justify="left", anchor="w")
         self.aprendeu.pack(fill="x", padx=12, pady=(0, 6))
         self.criar_dica()
+        self.lugar_do_radar = ctk.CTkFrame(self.corpo, fg_color="transparent")   # o mapa do radar (esfera 4)
+        self.lugar_do_radar.pack(fill="x", padx=6)
+        self.radar = None
+        self._ultima_tentativa = 0.0
         self.criar_resgate()
         self.criar_grito()
         self.corpo.bind("<Configure>", self._ajustar_quebra_de_linha)
@@ -321,6 +327,26 @@ class TelaEsferas(Tela):
         if extra.startswith("💡 Esfera"):                # "💡 Esfera 4: ..." -> so o texto (o titulo ja diz qual)
             extra = extra.split(": ", 1)[-1]
         self.extra.configure(text=f"💡 Dica extra do professor: {extra}" if extra else "")
+        self.mostrar_radar(bool(dica) and dica["esfera"] == 4 and visao.get("radar_no_app", False))
+
+    def mostrar_radar(self, ligado):
+        """O mapa do radar aparece so quando a esfera 4 e a da vez (e o professor deixou o mapa liberado)."""
+        if ligado and self.radar is None:
+            self.radar = MapaDoRadar(self.lugar_do_radar, lambda: self.visao["numero"], self.resgatar_do_radar)
+            self.radar.pack(fill="x", pady=4)
+        elif not ligado and self.radar is not None:
+            self.radar.destroy()
+            self.radar = None
+
+    def resgatar_do_radar(self, codigo):
+        """O radar achou a esfera: resgata sozinho (esperando os 2 s entre tentativas, se precisar)."""
+        def resgatar_agora():
+            self.campo_codigo.delete(0, "end")
+            self.campo_codigo.insert(0, codigo)
+            self.resgatar()
+
+        espera = max(0.0, 2.1 - (time.time() - self._ultima_tentativa))
+        self.after(int(espera * 1000), resgatar_agora)
 
     # ---------------- resgatar um codigo ----------------
 
@@ -335,6 +361,7 @@ class TelaEsferas(Tela):
             self.avisar(self.resultado, "Digite o código que você encontrou (ex.: ESF-7KQ2M).", tema.DESTAQUE)
             return
         self._resgatando = True
+        self._ultima_tentativa = time.time()
         self.botao_resgatar.configure(state="disabled")
         tarefas.em_segundo_plano(self, lambda: esferas_cliente.resgatar(codigo), self.resgatou, self.recusou)
 
