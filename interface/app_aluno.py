@@ -9,6 +9,7 @@ from interface.telas.chat import TelaChat
 from interface.telas.conexao import TelaConexao
 from interface.telas.desafios import JanelaDesafioRecebido
 from interface.telas.duelo import TelaDueloBatalha, TelaDueloQuiz
+from interface.telas.esferas import TelaEsferas
 from interface.telas.personagens import TelaPersonagens
 from interface.telas.planetas import TelaPlanetas
 from interface.telas.quiz import TelaQuiz
@@ -24,6 +25,7 @@ MENU = [
     ("quiz", "❓   Quem é?", TelaQuiz),
     ("turma", "👥   Turma e duelos", TelaTurma),
     ("chat", "💬   Chat", TelaChat),
+    ("esferas", "🐉   Esferas", TelaEsferas),
     ("rede", "📡   Rede", TelaRede),
 ]
 
