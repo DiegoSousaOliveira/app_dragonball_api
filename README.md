@@ -61,7 +61,7 @@ o programa já leva tudo dentro.
 
 | Arquivo | Quando usar |
 |---|---|
-| **`DragonBallDex-Setup-2.4.1.exe`** (≈ 30 MB) | **Recomendado.** Instala com atalhos e libera o servidor no Firewall |
+| **`DragonBallDex-Setup-2.4.2.exe`** (≈ 30 MB) | **Recomendado.** Instala com atalhos e libera o servidor no Firewall |
 | **`DragonBallDex-Portatil.exe`** (≈ 34 MB) | Sem instalar: copie **só este arquivo** (pendrive, Downloads...) e dê dois cliques. Demora uns segundos a mais para abrir |
 
 ### Com o instalador
@@ -77,7 +77,7 @@ o programa já leva tudo dentro.
 | **Libera o programa no Firewall do Windows** | Senão os alunos não conseguem chegar ao servidor |
 | Cria o desinstalador (Painel de Controle → Aplicativos) | O placar e o cache ficam em `%LOCALAPPDATA%\DragonBallDex` e não são apagados |
 
-> **Sem senha de administrador?** Execute o instalador com `/CURRENTUSER` (ex.: `DragonBallDex-Setup-2.4.1.exe
+> **Sem senha de administrador?** Execute o instalador com `/CURRENTUSER` (ex.: `DragonBallDex-Setup-2.4.2.exe
 > /CURRENTUSER`): ele instala só para aquele usuário. Nos PCs dos **alunos** isso basta. No PC do **professor**, o
 > Firewall vai perguntar na primeira vez em que o servidor for aberto (pode pedir a senha de administrador): clique em
 > **Permitir acesso** e marque redes privadas **e** públicas.
@@ -546,6 +546,9 @@ bloquear gritos e ligar o modo demonstração **não têm rota**: só existem no
 | **Caçada:** o link "Área do caçador" não aparece na página do servidor | A caçada não está valendo (ainda não começou ou está pausada) | Inicie ou retome a caçada e recarregue a página (F5) |
 | **Caçada:** o radar responde 400 | Faltou o `cacador`, o `x` ou o `y`, ou um valor está fora de 0 a 10 | A própria resposta explica como montar a URL |
 | **Caçada:** um aluno fica na grade com 1 esfera e não sai disso | O PC dele está com o app 2.2 (sem a tela Esferas) | Atualize o app naquele PC |
+| **Caçada:** no painel, o nome do aluno fica embaixo das esferas | (corrigido na 2.4.2) Com poucos alunos, as esferas cresciam demais | Atualize o PC do professor para a 2.4.2 |
+| **Conquista:** no telão, o nome de um planeta fica escondido atrás de outro planeta | (corrigido na 2.4.2) Com poucos planetas, eles ficavam juntos no meio da tela | Atualize o PC do professor para a 2.4.2 (agora o mapa se espalha e os nomes ficam por cima, com fundo escuro) |
+| Um teste do grito UDP (`test_grito_udp_e_a_descoberta_antiga_continua_igual`) falha às vezes | O servidor do Dragon Ball Dex está aberto no mesmo PC e também responde ao grito na porta 50505 | Feche o servidor antes de rodar `tests/rodar_testes.py` |
 | No app, os itens do menu não cabem na tela | Tela 1366×768 com escala de 125% (o menu tem 10 itens) | (corrigido na 2.4) Aparece uma barra de rolagem no menu; o rodapé ("Trocar conexão", 🔊) fica sempre visível |
 | **Caçada:** na esfera 4, o campo "Resgatar" sumiu embaixo do mapa do radar | (corrigido na 2.4) A tela Esferas não rolava | Atualize para a 2.4. O código achado pelo mapa é resgatado sozinho |
 | **Caçada:** o mapa do radar não aparece na esfera 4 | O interruptor "Mapa do radar no app" (aba 🐉 Caçada) está desligado | Ligue o interruptor, ou use o navegador (a dica mostra o endereço) |
@@ -590,7 +593,7 @@ python ferramentas/simular_conquista.py --conectar IP:PORTA    alunos falsos par
 
 ```
 pip install -r requirements.txt -r requirements-dev.txt     (com um Python de python.org, não o da Microsoft Store)
-python instalador/construir.py        ->  dist_instalador\DragonBallDex-Setup-2.4.1.exe  e  DragonBallDex-Portatil.exe
+python instalador/construir.py        ->  dist_instalador\DragonBallDex-Setup-2.4.2.exe  e  DragonBallDex-Portatil.exe
 ```
 
 | Pasta | Conteúdo |
@@ -628,6 +631,7 @@ O código está em [github.com/DiegoSousaOliveira/app_dragonball_api](https://gi
 | `cacada-esferas` · `v2.3.2` | A 2.3.1 + o guia **❔ Como funciona?** em todas as telas do app do aluno |
 | `conquista-territorios` · `v2.4.0` | A 2.3.2 + **Conquista de Territórios**, **mapa do radar** (esfera 4), **Grito de Guerra** e **Modo demonstração** |
 | `conquista-territorios` · `v2.4.1` | A 2.4.0 + o grito de guerra aceita **📁 um arquivo de áudio do próprio PC** (o YouTube continua fora) |
+| `conquista-territorios` · `v2.4.2` | Correções no painel: o nome do aluno não fica mais embaixo das esferas na Caçada, e os nomes dos planetas não ficam mais escondidos no telão da Conquista |
 
 ```
 git checkout main                     volta para a versão estável (2.2)

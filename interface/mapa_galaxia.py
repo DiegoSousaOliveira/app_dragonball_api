@@ -53,25 +53,58 @@ class MapaGalaxia(tk.Canvas):
 
     # ---------------- contas ----------------
 
-    def _raio(self):
+    def _raio_da_tela(self):
         largura, altura = self.winfo_width(), self.winfo_height()
         return max(12.0, min(largura / 1.6, altura) * 0.062)
 
-    def _posicao(self, territorio):
+    def _caixa(self):
+        """O retangulo ocupado pelos lugares em jogo. Os lugares foram pensados para 20 planetas; com poucos, eles
+        ficam todos no meio, e por isso o mapa se ESPALHA pela tela (no maximo 2,5 vezes)."""
+        xs = [t["x"] for t in self.mapa] or [0.5]
+        ys = [t["y"] for t in self.mapa] or [0.5]
+        return ((min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2,
+                max(0.2, (max(xs) - min(xs)) / 2), max(0.2, (max(ys) - min(ys)) / 2))
+
+    def _posicoes(self, raio):
         largura, altura = self.winfo_width(), self.winfo_height()
-        raio = self._raio()
+        meio_x, meio_y, meia_x, meia_y = self._caixa()
         margem_x, topo, base = raio * 2.3, raio * 1.6, raio * 2.6        # sobra espaco para os nomes
-        x = margem_x + territorio["x"] * max(1.0, largura - 2 * margem_x)
-        y = topo + territorio["y"] * max(1.0, altura - topo - base)
-        return x, y
+        posicoes = {}
+        for territorio in self.mapa:
+            nx = 0.5 + (territorio["x"] - meio_x) / meia_x * 0.5
+            ny = 0.5 + (territorio["y"] - meio_y) / meia_y * 0.5
+            posicoes[territorio["id"]] = (margem_x + nx * max(1.0, largura - 2 * margem_x),
+                                          topo + ny * max(1.0, altura - topo - base))
+        return posicoes
+
+    def _layout(self):
+        """(raio, {id: (x, y)}). O raio vem do tamanho da tela, mas nunca passa de 30% da distancia entre os dois
+        planetas mais proximos (senao o nome de um fica embaixo do outro)."""
+        raio = self._raio_da_tela()
+        posicoes = self._posicoes(raio)
+        pontos = list(posicoes.values())
+        distancias = [math.hypot(a[0] - b[0], a[1] - b[1]) for i, a in enumerate(pontos) for b in pontos[i + 1:]]
+        if distancias and min(distancias) * 0.3 < raio:
+            raio = max(10.0, min(distancias) * 0.3)
+            posicoes = self._posicoes(raio)
+        return raio, posicoes
 
     def _clique(self, evento):
-        raio = self._raio()
+        raio, posicoes = self._layout()
         for territorio in self.mapa:
-            x, y = self._posicao(territorio)
+            x, y = posicoes[territorio["id"]]
             if math.hypot(evento.x - x, evento.y - y) <= raio * 1.4:
                 self.ao_clicar(territorio["id"])
                 return
+
+    def _etiqueta(self, x, y, texto, cor, fonte):
+        """Um texto com um fundo escuro atras: sempre legivel, mesmo passando por cima de outro planeta."""
+        item = self.create_text(x, y, text=texto, fill=cor, font=fonte)
+        caixa = self.bbox(item)
+        if caixa:
+            fundo = self.create_rectangle(caixa[0] - 3, caixa[1] - 1, caixa[2] + 3, caixa[3] + 1, fill=ESPACO,
+                                          outline="")
+            self.tag_lower(fundo, item)
 
     # ---------------- desenho ----------------
 
@@ -88,11 +121,11 @@ class MapaGalaxia(tk.Canvas):
             self.create_text(largura / 2, altura / 2, text=self.aviso_vazio, fill=tema.TEXTO_SECUNDARIO,
                              font=(fonte, -int(max(13, altura * 0.035))), width=largura * 0.8, justify="center")
             return
-        raio = self._raio()
+        raio, posicoes = self._layout()
         agora = time.time()
         animar = False
         for territorio in self.mapa:
-            x, y = self._posicao(territorio)
+            x, y = posicoes[territorio["id"]]
             cor = cor_do_dono(territorio["cor"])
             destaque = self.destaques.get(territorio["id"])
             if destaque and agora - destaque < PULSO:                     # pulso: acabou de trocar de dono
@@ -119,15 +152,17 @@ class MapaGalaxia(tk.Canvas):
             r = raio * 0.55                                               # um brilho de planeta
             self.create_oval(x - r - raio * 0.2, y - r - raio * 0.2, x + r - raio * 0.2, y + r - raio * 0.2,
                              fill=misturar(cor, "#000000", 0.2), outline="")
+        for territorio in self.mapa:              # os textos DEPOIS de todos os planetas: nenhum fica escondido
+            x, y = posicoes[territorio["id"]]
+            cor = cor_do_dono(territorio["cor"])
             nome = territorio["nome"]
-            limite = int(raio * 0.9)                                      # mapa pequeno: nomes mais curtos
+            limite = max(10, int(raio * 0.9))                             # mapa pequeno: nomes mais curtos
             if len(nome) > limite:
-                nome = nome[:max(6, limite - 1)] + "…"
-            self.create_text(x, y + raio * 1.45, text=nome, fill=tema.TEXTO,
-                             font=(fonte, -int(max(11, raio * 0.42)), "bold"))
+                nome = nome[:limite - 1] + "…"
+            self._etiqueta(x, y + raio * 1.45, nome, tema.TEXTO, (fonte, -int(max(11, raio * 0.42)), "bold"))
             dono = territorio["dono"] or "neutro"
-            self.create_text(x, y + raio * 2.05, text=dono, fill=cor if territorio["dono"] else tema.TEXTO_SECUNDARIO,
-                             font=(fonte, -int(max(10, raio * 0.36)), "bold" if territorio["dono"] else "normal"))
+            self._etiqueta(x, y + raio * 2.05, dono, cor if territorio["dono"] else tema.TEXTO_SECUNDARIO,
+                           (fonte, -int(max(10, raio * 0.36)), "bold" if territorio["dono"] else "normal"))
             if territorio["escudo"]:
                 self.create_text(x + raio * 0.95, y - raio * 0.95, text=f"🛡{territorio['escudo']}",
                                  fill="#9CC3FF", font=(fonte, -int(max(10, raio * 0.36)), "bold"))

@@ -64,7 +64,10 @@ class GradeDaCacada(tk.Canvas):
                                   "(ou quando abrem a tela 🐉 Esferas do app).")
             return
         cabecalho = 26 * self.escala
-        linha = max(16.0, min(46 * self.escala, (altura - cabecalho) / len(self.cacadores)))
+        # A altura da linha decide o tamanho de tudo (esferas, letras). Ela cabe na ALTURA (todos os alunos) e na
+        # LARGURA: numero (1,6) + nome (3,5) + 7 esferas (6,65) + pontos (2,6) = ~14,4 linhas de largura. Sem o
+        # limite da largura, com poucos alunos as esferas cresciam e ficavam em cima do nome.
+        linha = max(16.0, min(46 * self.escala, (altura - cabecalho) / len(self.cacadores), largura / 14.4))
         raio = linha * 0.36
         passo = linha * 0.95
         largura_pontos = linha * 2.6
