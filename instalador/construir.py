@@ -44,7 +44,8 @@ def gerar_exe(arquivo_unico=False):
                "--name", nome, "--icon", str(ICONE),
                "--distpath", str(destino), "--workpath", str(PROJETO / "build" / nome),
                "--specpath", str(PROJETO / "build"),
-               "--collect-data", "customtkinter"]
+               "--collect-data", "customtkinter",
+               "--hidden-import", "_cffi_backend"]                  # o miniaudio (som) precisa e o PyInstaller nao ve
     comando += dado(PROJETO / "dados", "dados")              # snapshot (plano B sem internet)
     comando += dado(ICONE, ".")
     imagens = PROJETO / "cache" / "imagens"

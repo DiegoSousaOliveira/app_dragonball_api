@@ -19,8 +19,9 @@ ARQUIVO = PASTA_USUARIO / "fumaca.txt"
 
 
 def rodar(endereco=None):
-    from interface import ajuda
+    from interface import ajuda, audio
     from interface.app_aluno import AppAluno
+    from interface.som_da_turma import JanelaSom
     from interface.telas import batalha as tela_batalha
     from interface.telas.detalhe import JanelaPersonagem
 
@@ -68,6 +69,7 @@ def rodar(endereco=None):
         (2000, "esferas", lambda: app.mostrar("esferas")),
         (2000, "conquista", lambda: app.mostrar("conquista")),
         (2000, "rede", lambda: app.mostrar("rede")),
+        (1000, "som", lambda: JanelaSom(app).janela.destroy()),
         (1500, "ajuda", lambda: [ajuda.abrir_ajuda(app, chave) for chave, *_ in ajuda.GUIA][-1].fechar()),
         (2000, "fim", app.destroy),
     ]
@@ -92,6 +94,7 @@ def rodar(endereco=None):
     linhas = [f"Teste de fumaca - {datetime.now():%d/%m/%Y %H:%M}",
               f"Fonte: {endereco or 'internet direto'}",
               f"Passos OK: {len(passos_ok)} de {len(roteiro)} ({', '.join(passos_ok)})",
+              f"Som: {audio.player().motivo or 'ok (toca mp3, wav e ogg)'}",
               f"Problemas: {len(problemas)}"] + problemas
     ARQUIVO.parent.mkdir(parents=True, exist_ok=True)
     ARQUIVO.write_text("\n".join(linhas), encoding="utf-8")

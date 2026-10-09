@@ -217,7 +217,7 @@ class JanelaAjuda:
                                                                             padx=20, pady=12)
         self.textos = []
         self.largura_do_texto = 600
-        self.conteudo.bind("<Configure>", self._ajustar_quebra_de_linha)
+        self.conteudo.bind("<Configure>", self._ajustar_quebra_de_linha, add="+")   # "+": nao apaga a rolagem do CTk
 
     def aberta(self):
         try:

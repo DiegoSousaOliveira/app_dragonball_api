@@ -363,6 +363,13 @@ class Conquista:
             self._zerar()
             self._evento("nova", agora, "↺ Nova conquista: esperando a largada.")
 
+    def entregar(self, id_territorio, id_jogador):
+        """Da um territorio NEUTRO a um participante (o ensaio do modo demonstracao comeca com os robos maiores)."""
+        with self._mexendo():
+            territorio = self.territorios.get(str(id_territorio))
+            if territorio is not None and territorio.dono is None and id_jogador in self.participantes:
+                territorio.dono = id_jogador
+
     # ---------------- o que os alunos fazem ----------------
 
     def exigir_ativa(self):

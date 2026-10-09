@@ -34,7 +34,7 @@ from servidor.sala import Sala
 
 PRIMEIRO_NUMERO = 901             # numeros de cacador do ensaio (os alunos comecam no 1)
 IP_DO_PROFESSOR = "127.0.0.1"
-ROBOS = [("Kuririn 🤖", "Bip bop! Pela honra das máquinas!"), ("Yamcha 🤖", "Lobo Selvagem... versão 2.0!")]
+ROBOS = ["Kuririn 🤖", "Yamcha 🤖"]   # com o grito PADRAO: no ensaio so toca o padrao ou o do proprio professor
 TICK = 1.0                        # segundos entre as jogadas dos robos
 INVADIR_A_CADA = (25, 45)         # segundos (sorteado) entre as invasoes de cada robo
 RESPONDER_QUIZ_A_CADA = (3, 6)    # segundos por rodada do quiz
@@ -117,8 +117,8 @@ class ChatDoDemo(Chat):
 
 
 class Robo:
-    def __init__(self, jogador, frase, rng, agora):
-        self.id, self.nome, self.frase = jogador["id"], jogador["nome"], frase
+    def __init__(self, jogador, rng, agora):
+        self.id, self.nome = jogador["id"], jogador["nome"]
         self.proxima_invasao = agora + rng.uniform(6, 12)     # a primeira vem logo, para o mapa mexer
         self.proxima_resposta = 0.0
         self.quiz = None                                      # {"id", "rodada", "pontos"} do quiz em andamento
@@ -146,7 +146,7 @@ class MundoDemo:
         self.relogio = relogio
         agora = relogio()
         self.professor = self.sala.entrar(demo.NOME, IP_DO_PROFESSOR)   # o app entra com o mesmo nome e IP
-        self.robos = [Robo(self.sala.entrar(nome, "robô"), frase, self.rng, agora) for nome, frase in ROBOS]
+        self.robos = [Robo(self.sala.entrar(nome, "robô"), self.rng, agora) for nome in ROBOS]
         self.cacada.iniciar([(self.professor["id"], demo.NOME)])         # sempre valendo: o professor e o 901
         self._parar = threading.Event()
         self._preparado = False
@@ -167,11 +167,13 @@ class MundoDemo:
         if self._preparado:
             return
         alunos = [(self.professor["id"], demo.NOME)] + [(r.id, r.nome) for r in self.robos]
-        self.conquista.iniciar(alunos, minutos=None, neutros=3)
+        self.conquista.iniciar(alunos, minutos=None, neutros=4)          # 1 do professor, 2 dos robos, 4 neutros
         self._preparado = True
+        neutros = [t["id"] for t in self.conquista.instantaneo()["mapa"] if t["dono"] is None]
+        for robo, territorio in zip(self.robos, neutros):                # os robos comecam com 2 planetas cada
+            self.conquista.entregar(territorio, robo.id)
         personagens = self.espelho.personagens()
         for robo in self.robos:
-            self.gritos.trocar(robo.id, robo.nome, frase=robo.frase)
             self.conquista.escolher_guardiao(robo.id, robo.nome, self.rng.choice(personagens)["id"])
 
     def _jogar(self):

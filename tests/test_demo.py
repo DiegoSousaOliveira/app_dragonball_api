@@ -174,7 +174,11 @@ def test_robos_aceitam_desafios_jogam_quiz_e_invadem():
     mundo.sala.desistir(prof, partida["id"])
     assert any(d["vencedor"] == robo.nome for d in mundo.placar.duelos)    # no placar do DEMO
     assert all(d["vencedor"] != robo.nome for d in app.placar.duelos)       # nunca no da turma
-    meu = next(t for t in mundo.conquista.instantaneo()["mapa"] if t["dono"] == demo.NOME)
+    mapa = mundo.conquista.instantaneo()["mapa"]
+    assert sum(t["dono"] in {r.nome for r in mundo.robos} for t in mapa) == 4     # 4 territorios de robos 🤖
+    assert sum(t["dono"] is None for t in mapa) == 2 and sum(t["dono"] == demo.NOME for t in mapa) == 1
+    assert all(g["padrao"] for g in mundo.gritos.instantaneo().values())          # so o grito padrao no ensaio
+    meu = next(t for t in mapa if t["dono"] == demo.NOME)
     for _ in range(8):                                                     # os robos invadem (nunca o professor)
         relogio.agora += 60
         mundo.passo()

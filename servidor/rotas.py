@@ -41,7 +41,7 @@ from servidor import mundo_demo, rotas_conquista, rotas_esferas, rotas_gritos
 from servidor.chat import Proibido
 from servidor.placar import DadoInvalido
 
-VERSAO = "2.3"
+VERSAO = "2.4"
 TAMANHO_MAXIMO_DO_CORPO = 10_000         # bytes: ninguem precisa mandar mais que isso
 
 

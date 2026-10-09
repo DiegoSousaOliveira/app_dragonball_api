@@ -50,8 +50,11 @@ class MapaDoRadar(ctk.CTkFrame):
         self.canvas = tk.Canvas(self, width=tamanho, height=tamanho, bg=FUNDO, highlightthickness=1,
                                 highlightbackground=LINHA, highlightcolor=VERDE, cursor="crosshair")
         self.canvas.pack(padx=12, pady=6)
-        legenda = "   ".join(f"■ {NOMES[faixa]}" for faixa in ("frio", "morno", "quente", "fervendo"))
-        tema.texto_secundario(self, legenda, 12).pack(anchor="w", padx=12)
+        legenda = ctk.CTkFrame(self, fg_color="transparent")
+        legenda.pack(anchor="w", padx=12)
+        for faixa in ("frio", "morno", "quente", "fervendo"):          # cada faixa na cor que ela pinta no mapa
+            ctk.CTkLabel(legenda, text=f"■ {NOMES[faixa]}", font=tema.fonte(12),
+                         text_color=CORES[faixa]).pack(side="left", padx=(0, 14))
         self.tentativas = tema.texto_secundario(self, "Tentativas: 0", 12)
         self.tentativas.pack(anchor="w", padx=12, pady=(0, 8))
         self.canvas.bind("<Button-1>", self._clique)

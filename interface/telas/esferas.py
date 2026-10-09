@@ -155,7 +155,7 @@ class TelaEsferas(Tela):
         self._ultima_tentativa = 0.0
         self.criar_resgate()
         self.criar_grito()
-        self.corpo.bind("<Configure>", self._ajustar_quebra_de_linha)
+        self.corpo.bind("<Configure>", self._ajustar_quebra_de_linha, add="+")   # "+": nao apaga a rolagem do CTk
 
     # ---------------- montagem ----------------
 
