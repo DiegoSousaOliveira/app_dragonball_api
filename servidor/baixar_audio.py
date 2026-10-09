@@ -59,6 +59,19 @@ def detectar_formato(dados):
     return None
 
 
+def conferir_arquivo(dados):
+    """Um audio que veio do PC do aluno (POST /gritos/audio): as mesmas regras do download, 500 KB e o formato pelos
+    primeiros bytes (um .mp3 que na verdade e outra coisa nao passa). Devolve (bytes, formato)."""
+    if not dados:
+        raise ErroDoAudio("O arquivo veio vazio. Escolha um áudio .mp3, .wav ou .ogg.")
+    if len(dados) > LIMITE:
+        raise GrandeDemais("O arquivo passa de 500 KB. Escolha um áudio mais curto.")
+    formato = detectar_formato(dados)
+    if formato is None:
+        raise FormatoErrado("Isso não é um áudio mp3, wav ou ogg (conferi os primeiros bytes do arquivo).")
+    return dados, formato
+
+
 def ip_publico(texto):
     """True so para IPs da internet (nada de 127.x, 10.x, 192.168.x, 169.254.x, multicast, reservados...)."""
     if texto in ENDERECOS_DE_TESTE:
@@ -86,8 +99,8 @@ def conferir(url):
     if not host:
         raise ErroDoAudio("Endereço inválido.")
     if host.endswith(("youtube.com", "youtu.be")):
-        raise ErroDoAudio("Link do YouTube não vale: ele abre uma PÁGINA, não um arquivo. Use um link direto para um "
-                          "arquivo .mp3, .wav ou .ogg.")
+        raise ErroDoAudio("Link do YouTube não vale: ele abre uma PÁGINA de vídeo, não um arquivo de áudio. Use 📁 "
+                          "Arquivo do PC (um .mp3, .wav ou .ogg) ou o link direto de um arquivo de áudio.")
     if partes.username or partes.password:
         raise Bloqueado("Endereços com usuário e senha não são aceitos.")
     porta = porta or (443 if partes.scheme == "https" else 80)

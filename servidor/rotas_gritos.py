@@ -5,6 +5,8 @@ As rotas do Grito de Guerra. O roteador (rotas.py) so encaminha para ca o que co
   POST /gritos/meu  {"frase", "url"}    trocar (o SERVIDOR baixa a URL)  ·  {"padrao": true} volta ao padrao
                                         400 URL invalida/YouTube · 403 SSRF ou bloqueado pelo professor
                                         413 grande demais · 415 nao e audio · 429 troca rapida · 502 sem internet
+  POST /gritos/audio?frase=...          um audio do PC do aluno: o ARQUIVO INTEIRO vai no corpo do pedido
+                                        (Content-Type: audio/mpeg...; ate 500 KB). 413 · 415 · 403 · 429
   GET  /gritos/eventos?depois=<id>      eventos de som novos + lista de audios para pre-carregar
   GET  /gritos/<hash>.mp3|wav|ogg       o audio (e /gritos/padrao.wav, o som padrao gerado pelo programa)
 O bloqueio NAO tem rota: fica so no painel (aba 📣 Gritos).
@@ -28,8 +30,12 @@ def _erro(status, mensagem):
     return _json({"statusCode": status, "message": mensagem}, status)
 
 
-def atender(app, metodo, caminho, params, cabecalhos, ler_corpo):
+def atender(app, metodo, caminho, params, cabecalhos, ler_corpo, ler_bruto=None):
+    """ler_corpo() le o JSON; ler_bruto(limite) le o corpo do jeito que veio (o arquivo do grito)."""
     try:
+        if (metodo, caminho) == ("POST", "/gritos/audio") and ler_bruto is not None:
+            conteudo = ler_bruto(baixar_audio.LIMITE)       # primeiro le o corpo inteiro (413 se passar de 500 KB)
+            return _json(app.gritos.trocar(*_quem(app, cabecalhos), frase=params.get("frase"), arquivo=conteudo))
         if (metodo, caminho) == ("GET", "/gritos/meu"):
             return _json(app.gritos.meu(*_quem(app, cabecalhos)))
         if (metodo, caminho) == ("POST", "/gritos/meu"):

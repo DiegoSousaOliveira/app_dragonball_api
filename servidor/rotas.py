@@ -21,7 +21,7 @@ Rotas:
   GET  /chat?depois=<id>&versao=<v>   mensagens novas do chat
   POST /chat                     {"texto"}   (403 se o chat estiver fechado ou o aluno bloqueado)
   GET|POST /esferas/...          Caca as Esferas (tudo em servidor/rotas_esferas.py)
-  GET|POST /gritos/...           Grito de Guerra (servidor/rotas_gritos.py)
+  GET|POST /gritos/...           Grito de Guerra (servidor/rotas_gritos.py; POST /gritos/audio traz um arquivo no corpo)
   GET|POST /conquista/...        Conquista de Territorios (servidor/rotas_conquista.py; lutas "cq-" em /turma/partida/)
 O aluno se identifica pelo cabecalho X-Jogador (recebido em /turma/entrar).
 Os controles do professor (fechar o chat, bloquear, apagar, ligar o modo demonstracao) NAO tem rota: ficam so no
@@ -37,7 +37,7 @@ from urllib.parse import parse_qsl, urlsplit
 
 from core import api
 from servidor import espelho as esp
-from servidor import mundo_demo, rotas_conquista, rotas_esferas, rotas_gritos
+from servidor import baixar_audio, mundo_demo, rotas_conquista, rotas_esferas, rotas_gritos
 from servidor.chat import Proibido
 from servidor.placar import DadoInvalido
 
@@ -231,6 +231,26 @@ class TratadorDragonBall(BaseHTTPRequestHandler):
             raise DadoInvalido("O corpo precisa ser um objeto JSON.")
         return dados
 
+    def _ler_corpo_bruto(self, limite):
+        """O corpo do jeito que veio (o arquivo de audio do grito). Maior que o limite: 413. Um pouco maior, le e
+        joga fora (a resposta chega certinho); enorme, nem le e fecha a conexao (senao o resto do arquivo seria lido
+        como se fosse o proximo pedido)."""
+        try:
+            tamanho = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            raise DadoInvalido("Content-Length invalido.")
+        if tamanho > limite:
+            if tamanho <= 4 * limite:
+                while tamanho > 0:
+                    pedaco = self.rfile.read(min(tamanho, 64 * 1024))
+                    if not pedaco:
+                        break
+                    tamanho -= len(pedaco)
+            else:
+                self.close_connection = True
+            raise baixar_audio.GrandeDemais("O arquivo passa de 500 KB. Escolha um áudio mais curto.")
+        return self.rfile.read(tamanho) if tamanho > 0 else b""
+
     def _atender(self, metodo):
         inicio = time.perf_counter()
         servidor = self.server.app
@@ -247,7 +267,7 @@ class TratadorDragonBall(BaseHTTPRequestHandler):
                                                            self._ler_corpo_json))
             elif partes.path.startswith("/gritos/"):       # Grito de Guerra: servidor/rotas_gritos.py
                 resposta = Resposta(*rotas_gritos.atender(app, metodo, partes.path, params, self.headers,
-                                                          self._ler_corpo_json))
+                                                          self._ler_corpo_json, self._ler_corpo_bruto))
             elif partes.path.startswith("/conquista/"):    # Conquista de Territorios: servidor/rotas_conquista.py
                 resposta = Resposta(*rotas_conquista.atender(app, metodo, partes.path, params, self.headers,
                                                              self._ler_corpo_json))

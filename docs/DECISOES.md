@@ -102,3 +102,11 @@ Plano completo, ganchos nos arquivos antigos e as 10 decisões aprovadas pelo pr
 | 73 | Subtítulo da Batalha: "O vencedor entra no Hall da Fama do telão." *(decisão 6)* Menu com rolagem que só aparece quando precisa, itens de 38 px. *(decisão 7)* | O texto antigo prometia pontos que a batalha de treino não dá; com 10 itens o menu não cabia em 1366×768 a 125%. |
 | 74 | Correção (bug da 2.3): a tela Esferas e o guia ❔ usavam `bind("<Configure>")` sem `add="+"`, o que apagava o ajuste de rolagem do `CTkScrollableFrame`. Com o mapa do radar, a página ficou mais alta que a janela e o campo "Resgatar" sumia. Agora `add="+"`. | Achado ao tirar os prints do README. |
 | 75 | `GET /turma/ping` passa a dizer versão `"2.4"`. | Os apps só conferem o campo `servico`; a versão é informativa. |
+
+## Versão 2.4.1 (grito com arquivo do PC)
+
+| # | Decisão | Por quê |
+|---|---|---|
+| 76 | O grito aceita **um arquivo de áudio do PC do aluno**: o botão **📁 Arquivo do PC** escolhe o `.mp3`/`.wav`/`.ogg` e o app manda o arquivo **inteiro no corpo** de `POST /gritos/audio` (`Content-Type: audio/...`; a frase vai na query string). O servidor aplica as mesmas regras do link: até 500 KB e formato pelos **primeiros bytes**. Sem `multipart/form-data`. | Pedido do professor. O corpo "cru" é simples de ler só com a biblioteca padrão e ensina bem o que é um upload (o arquivo no corpo, `Content-Type`, `Content-Length`). O app barra antes de mandar um arquivo acima de 500 KB. |
+| 77 | **YouTube continua fora** (escolha do professor entre as opções apresentadas). A mensagem do 400 agora ensina o caminho: "use 📁 Arquivo do PC ou o link direto de um arquivo de áudio". | Baixar o som de um vídeo exigiria `yt-dlp` + `ffmpeg` (+80–100 MB no instalador), tiraria o servidor da biblioteca padrão, precisaria de internet, quebraria a cada mudança do YouTube e vai contra os termos de uso dele. |
+| 78 | Corpo maior que o limite: **413**. Até 4× o limite o servidor lê e joga fora (a resposta chega certinha e a conexão continua); acima disso nem lê e **fecha a conexão**. Arquivo recusado (vazio, grande, formato errado) **não gasta** a vez de trocar o grito. | Se o servidor respondesse sem ler, o resto do arquivo seria interpretado como o próximo pedido na mesma conexão (keep-alive). Recusa de arquivo não usa a rede de ninguém, então não precisa da espera de 10 s. |

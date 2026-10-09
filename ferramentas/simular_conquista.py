@@ -1,5 +1,6 @@
 """
-Ensaio da Conquista de Territorios: alunos falsos entram na sala, escolhem o Guardiao, trocam o grito de guerra e
+Ensaio da Conquista de Territorios: alunos falsos entram na sala, escolhem o Guardiao, trocam o grito de guerra (as
+vezes mandando um arquivo de audio, como o "📁 Arquivo do PC") e
 invadem planetas DO MESMO JEITO que o app faz (as mesmas rotas). Serve para o professor testar o telao sozinho,
 antes da aula.
 
@@ -29,7 +30,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import requests
 
-NOMES = ["Ana", "Bruno", "Carla", "Davi", "Eduarda", "Felipe", "Gabriela", "Heitor", "Isabela", "João",
+from core.grito_padrao import gerar_wav
+
+NOMES =["Ana", "Bruno", "Carla", "Davi", "Eduarda", "Felipe", "Gabriela", "Heitor", "Isabela", "João",
          "Kauã", "Larissa", "Miguel", "Nicole", "Otávio", "Pietra", "Rafael", "Sofia", "Thiago", "Valentina"]
 APP = "DragonBallDex/2.0"
 GRITOS = ["Pelo poder de Namek!", "Ninguém segura a turma!", "KAMEHAMEHA!", "Final Flash!", "Ka... me... ha!",
@@ -87,7 +90,13 @@ class AlunoFalso(threading.Thread):
             escrever(f"{self.nome} escolheu {resposta.json()['eu']['guardiao']['nome']} como Guardião")
 
     def trocar_grito(self):
-        if self.post("/gritos/meu", {"frase": random.choice(GRITOS)}).status_code == 200:
+        frase = random.choice(GRITOS)
+        if random.random() < 0.4:                    # "📁 Arquivo do PC": o arquivo inteiro vai no corpo do POST
+            resposta = self.sessao.post(self.base + "/gritos/audio", params={"frase": frase}, data=gerar_wav(),
+                                        headers={"Content-Type": "audio/wav"}, timeout=10)
+        else:
+            resposta = self.post("/gritos/meu", {"frase": frase})
+        if resposta.status_code == 200:
             self.trocou_grito = True
 
     def invadir(self, visao):

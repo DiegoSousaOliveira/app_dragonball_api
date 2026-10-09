@@ -5,7 +5,8 @@ rodadas e o SERVIDOR. So existe com o servidor da sala e depois que o professor 
 """
 
 from collections import deque
-from tkinter import messagebox
+from pathlib import Path
+from tkinter import filedialog, messagebox
 
 import customtkinter as ctk
 
@@ -139,7 +140,8 @@ class TelaConquista(Tela):
         self.texto_feed.pack(fill="x", padx=12, pady=(0, 8))
 
     def criar_grito(self):
-        """O meu grito de guerra: a frase + o audio (o SERVIDOR baixa o link, com protecoes)."""
+        """O meu grito de guerra: a frase + o audio, que vem de um link (o SERVIDOR baixa, com protecoes) OU de um
+        arquivo do PC (o app manda o arquivo inteiro no corpo do pedido)."""
         caixa = self.cartao("📣 Seu grito de guerra")
         self.grito_atual = ctk.CTkLabel(caixa, text="...", font=tema.fonte(14, negrito=True), anchor="w",
                                         justify="left", wraplength=240)
@@ -148,9 +150,21 @@ class TelaConquista(Tela):
         self.campo_frase.pack(fill="x", padx=12, pady=(6, 3))
         self.campo_url = ctk.CTkEntry(caixa, placeholder_text="Link do áudio: https://.../grito.mp3", height=32)
         self.campo_url.pack(fill="x", padx=12, pady=3)
-        tema.texto_secundario(caixa, "Link DIRETO de um arquivo .mp3, .wav ou .ogg (até 500 KB). YouTube não vale: "
-                                     "ele abre uma página, não um arquivo.", 11, wraplength=240,
-                              justify="left").pack(anchor="w", padx=12)
+        self.campo_url.bind("<Key>", lambda evento: self.tirar_arquivo(), add="+")    # um OU outro
+        linha_arquivo = ctk.CTkFrame(caixa, fg_color="transparent")
+        linha_arquivo.pack(fill="x", padx=12, pady=3)
+        tema.botao_secundario(linha_arquivo, "📁 Arquivo do PC", self.escolher_arquivo, largura=128,
+                              altura=30).pack(side="left")
+        self.botao_tirar_arquivo = ctk.CTkButton(linha_arquivo, text="✕", width=26, height=26, fg_color="transparent",
+                                                 hover_color=tema.FUNDO, text_color=tema.TEXTO_SECUNDARIO,
+                                                 command=self.tirar_arquivo)
+        self.rotulo_arquivo = ctk.CTkLabel(linha_arquivo, text="", font=tema.fonte(12), anchor="w",
+                                           text_color=tema.SUCESSO)
+        self.rotulo_arquivo.pack(side="left", padx=(6, 0), fill="x", expand=True)
+        self.arquivo_escolhido = None
+        tema.texto_secundario(caixa, "O áudio: o link DIRETO de um .mp3, .wav ou .ogg, ou um arquivo do seu PC (até "
+                                     "500 KB). YouTube não vale: ele abre uma página, não um arquivo.", 11,
+                              wraplength=240, justify="left").pack(anchor="w", padx=12)
         linha = ctk.CTkFrame(caixa, fg_color="transparent")
         linha.pack(fill="x", padx=12, pady=(6, 2))
         tema.botao(linha, "Salvar", self.salvar_grito, largura=76, altura=30).pack(side="left")
@@ -172,21 +186,58 @@ class TelaConquista(Tela):
         elif self.status_grito.cget("text").startswith("🔇"):
             self.status_grito.configure(text="")                    # o professor liberou
 
+    def escolher_arquivo(self):
+        """📁: um audio que ja esta no computador do aluno."""
+        caminho = filedialog.askopenfilename(parent=self, title="Escolha o áudio do seu grito de guerra",
+                                             filetypes=[("Áudio (mp3, wav, ogg)", "*.mp3 *.wav *.ogg")])
+        if not caminho:
+            return
+        arquivo = Path(caminho)
+        self.arquivo_escolhido = arquivo
+        self.campo_url.delete(0, "end")                   # um OU outro: o arquivo do PC ou o link
+        nome = arquivo.name if len(arquivo.name) <= 18 else arquivo.name[:15] + "..."
+        try:
+            tamanho = f" ({arquivo.stat().st_size // 1024} KB)"
+        except OSError:
+            tamanho = ""
+        self.rotulo_arquivo.configure(text=f"🎵 {nome}{tamanho}")
+        self.botao_tirar_arquivo.pack(side="right")
+        self.status_grito.configure(text="Agora clique em Salvar.", text_color=tema.TEXTO_SECUNDARIO)
+
+    def tirar_arquivo(self):
+        if self.arquivo_escolhido is None:
+            return
+        self.arquivo_escolhido = None
+        self.rotulo_arquivo.configure(text="")
+        self.botao_tirar_arquivo.pack_forget()
+
     def salvar_grito(self):
         frase = self.campo_frase.get().strip() or None
         url = self.campo_url.get().strip() or None
-        if not frase and not url:
-            self.status_grito.configure(text="Escreva uma frase e/ou cole um link.", text_color=tema.DESTAQUE)
+        arquivo = self.arquivo_escolhido
+        if not frase and not url and arquivo is None:
+            self.status_grito.configure(text="Escreva uma frase, cole um link ou escolha um arquivo do PC.",
+                                        text_color=tema.DESTAQUE)
             return
-        self.status_grito.configure(text="Enviando... (o servidor baixa o áudio)", text_color=tema.TEXTO_SECUNDARIO)
+        if arquivo is not None and url:
+            self.status_grito.configure(text="Use só um: o arquivo do PC (o ✕ tira) ou o link.",
+                                        text_color=tema.DESTAQUE)
+            return
+        if arquivo is not None:
+            texto, trabalho = "Enviando o arquivo...", lambda: gritos_cliente.enviar_arquivo(arquivo, frase)
+        else:
+            texto = "Enviando... (o servidor baixa o áudio)" if url else "Enviando..."
+            trabalho = lambda: gritos_cliente.trocar(frase, url)
+        self.status_grito.configure(text=texto, text_color=tema.TEXTO_SECUNDARIO)
 
         def deu_certo(meu):
             self.campo_frase.delete(0, "end")
             self.campo_url.delete(0, "end")
+            self.tirar_arquivo()
             self.mostrar_grito(meu)
             self.status_grito.configure(text="✔ Grito salvo!", text_color=tema.SUCESSO)
 
-        tarefas.em_segundo_plano(self, lambda: gritos_cliente.trocar(frase, url), deu_certo,
+        tarefas.em_segundo_plano(self, trabalho, deu_certo,
                                  lambda erro: self.status_grito.configure(text=f"✖ {erro}", text_color=tema.PERIGO))
 
     def grito_padrao(self):

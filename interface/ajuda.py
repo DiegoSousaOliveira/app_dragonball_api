@@ -126,8 +126,9 @@ GUIA = [
       "\"Transformar! ⚡\".",
       "Venceu? O planeta é seu e ganha um escudo 🛡 por alguns segundos. Perdeu? O Guardião ficou com ele.",
       "Acompanhe o ranking e o \"Acontecendo agora\" do lado do mapa.",
-      "Monte o seu 📣 Grito de guerra: uma frase e, se quiser, o link DIRETO de um áudio (.mp3, .wav ou .ogg). Ele "
-      "toca quando você invade e, para a turma toda, quando você conquista um planeta."],
+      "Monte o seu 📣 Grito de guerra: uma frase e, se quiser, um áudio (.mp3, .wav ou .ogg, até 500 KB): o link "
+      "DIRETO do arquivo ou 📁 um arquivo do seu PC. Ele toca quando você invade e, para a turma toda, quando você "
+      "conquista um planeta."],
      ["Os avisos de erro ensinam Redes: 409 = o planeta está ocupado (alguém já está invadindo, ou ele tem "
       "escudo); 429 = calma, espere alguns segundos para invadir de novo; 403 = esse planeta já é seu.",
       "Se dois alunos clicarem no mesmo planeta ao mesmo tempo, o servidor deixa só UM passar.",

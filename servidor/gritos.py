@@ -86,8 +86,9 @@ class Gritos:
         with self._trava:
             return self._meu(self._aluno(id_jogador, nome), self.relogio())
 
-    def trocar(self, id_jogador, nome, frase=None, url=None, padrao=False):
-        """Troca a frase e/ou o audio (URL baixada pelo servidor). padrao=True volta ao grito padrao."""
+    def trocar(self, id_jogador, nome, frase=None, url=None, padrao=False, arquivo=None):
+        """Troca a frase e/ou o audio: url = link que o SERVIDOR baixa; arquivo = os bytes de um audio que veio do PC
+        do aluno (POST /gritos/audio). padrao=True volta ao grito padrao."""
         agora = self.relogio()
         with self._trava:
             dados = self._aluno(id_jogador, nome)
@@ -101,12 +102,15 @@ class Gritos:
         if not padrao:
             if frase is not None:
                 nova_frase = limpar_texto(frase)[:TAMANHO_DA_FRASE].strip()
-            if url:                                        # baixar demora: FORA da trava
+            if arquivo is not None or url:                 # baixar demora: FORA da trava
                 try:
-                    conteudo, formato = self.baixar(url)
+                    if arquivo is not None:                # veio do PC do aluno: so confere tamanho e formato
+                        conteudo, formato = baixar_audio.conferir_arquivo(arquivo)
+                    else:
+                        conteudo, formato = self.baixar(url)
                 except baixar_audio.ErroDoAudio as erro:
-                    if erro.status == 400:                 # recusado so de olhar o endereco (sem usar a rede):
-                        with self._trava:                  # nao gasta a vez do aluno
+                    if erro.status == 400 or arquivo is not None:   # recusado sem usar a rede (endereco errado
+                        with self._trava:                           # ou arquivo do PC): nao gasta a vez do aluno
                             if dados["trocou_em"] == agora:
                                 dados["trocou_em"] = anterior
                     raise

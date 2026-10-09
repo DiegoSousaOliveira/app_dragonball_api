@@ -61,7 +61,7 @@ o programa já leva tudo dentro.
 
 | Arquivo | Quando usar |
 |---|---|
-| **`DragonBallDex-Setup-2.4.0.exe`** (≈ 30 MB) | **Recomendado.** Instala com atalhos e libera o servidor no Firewall |
+| **`DragonBallDex-Setup-2.4.1.exe`** (≈ 30 MB) | **Recomendado.** Instala com atalhos e libera o servidor no Firewall |
 | **`DragonBallDex-Portatil.exe`** (≈ 34 MB) | Sem instalar: copie **só este arquivo** (pendrive, Downloads...) e dê dois cliques. Demora uns segundos a mais para abrir |
 
 ### Com o instalador
@@ -77,7 +77,7 @@ o programa já leva tudo dentro.
 | **Libera o programa no Firewall do Windows** | Senão os alunos não conseguem chegar ao servidor |
 | Cria o desinstalador (Painel de Controle → Aplicativos) | O placar e o cache ficam em `%LOCALAPPDATA%\DragonBallDex` e não são apagados |
 
-> **Sem senha de administrador?** Execute o instalador com `/CURRENTUSER` (ex.: `DragonBallDex-Setup-2.4.0.exe
+> **Sem senha de administrador?** Execute o instalador com `/CURRENTUSER` (ex.: `DragonBallDex-Setup-2.4.1.exe
 > /CURRENTUSER`): ele instala só para aquele usuário. Nos PCs dos **alunos** isso basta. No PC do **professor**, o
 > Firewall vai perguntar na primeira vez em que o servidor for aberto (pode pedir a senha de administrador): clique em
 > **Permitir acesso** e marque redes privadas **e** públicas.
@@ -352,20 +352,28 @@ vivo". Sem Python: **🎓 Modo demonstração** (seção 7).
 
 ## 6. Grito de Guerra 📣
 
-Cada aluno monta o **seu grito**: uma frase (até 40 letras) e, se quiser, o **link direto de um áudio** (`.mp3`, `.wav`
-ou `.ogg`, até 500 KB). O grito toca no PC de quem invade e, para a turma toda, quando alguém **conquista um planeta**,
-**acha a esfera de 6 estrelas** ou **invoca o dragão**. Quem não monta nada usa o grito padrão: "Pela honra da Terra!"
-com um som gerado pelo próprio programa.
+Cada aluno monta o **seu grito**: uma frase (até 40 letras) e, se quiser, um áudio (`.mp3`, `.wav` ou `.ogg`, até
+500 KB), que pode ser **📁 um arquivo do próprio PC** (novo na 2.4.1) ou o **link direto** de um arquivo na internet. O
+grito toca no PC de quem invade e, para a turma toda, quando alguém **conquista um planeta**, **acha a esfera de 6
+estrelas** ou **invoca o dragão**. Quem não monta nada usa o grito padrão: "Pela honra da Terra!" com um som gerado
+pelo próprio programa.
 
-<!-- previsto: docs/imagens/grito_aluno.png (cartão "📣 Seu grito de guerra" com um áudio 🎵 salvo e uma mensagem de erro) -->
+![Cartão do grito: um arquivo falso recusado (415) e um grito salvo com áudio do PC](docs/imagens/grito_aluno.png)
 
-- **Onde:** no cartão **📣 Seu grito de guerra**, na tela 🗺 Conquista. **▶ Testar** toca o seu; **Padrão** volta ao
+- **Onde:** no cartão **📣 Seu grito de guerra**, na tela 🗺 Conquista: escreva a frase, cole o link **ou** clique em
+  **📁 Arquivo do PC** (o ✕ desfaz a escolha) e clique em **Salvar**. **▶ Testar** toca o seu; **Padrão** volta ao
   grito do programa.
-- **Quem baixa o áudio é o servidor**, não o app (ele funciona como um *proxy*). Por isso há proteções:
+- **Arquivo do PC:** o app manda o arquivo **inteiro no corpo** de um `POST /gritos/audio` (com o cabeçalho
+  `Content-Type: audio/mpeg`, por exemplo, e a frase na query string). Arquivo acima de 500 KB o app nem manda.
+- **Link:** quem baixa o áudio é o **servidor**, não o app (ele funciona como um *proxy*). Por isso há proteções:
   só endereços `http://` ou `https://` nas portas 80 e 443; **nada dentro da rede da escola** (roteador, impressora,
-  o próprio servidor) — nem por redirecionamento; no máximo 3 redirecionamentos, 5 s e 500 KB; e o tipo do arquivo é
-  conferido pelos **primeiros bytes**, não pela extensão (um `.mp3` que na verdade é uma página não passa).
-- Dá para trocar o grito a cada 10 s.
+  o próprio servidor) — nem por redirecionamento; no máximo 3 redirecionamentos, 5 s e 500 KB.
+- Nos dois casos o servidor confere o tipo do arquivo pelos **primeiros bytes**, não pela extensão: um `.mp3` que na
+  verdade é uma página ou um programa renomeado não passa (415).
+- **YouTube não vale** (decisão do professor): o link abre uma **página** de vídeo, não um arquivo de áudio, e baixar o
+  som exigiria programas pesados no instalador e iria contra os termos de uso do YouTube. O app explica isso e sugere o
+  📁 Arquivo do PC.
+- Dá para trocar o grito a cada 10 s. Um arquivo ou link recusado sem usar a rede não gasta essa vez.
 - **Som em cada PC:** o botão **🔊** no rodapé do menu liga/desliga e muda o volume (bom para quem usa fone). Os sons
   tocam **um de cada vez** (no máximo 2 esperando; o resto é descartado) e cada um dura no máximo 6 s. Sem som no PC,
   o app avisa "sem áudio neste PC" e continua mostrando a frase.
@@ -384,10 +392,10 @@ proteção é de **rede**, não de conteúdo: um áudio de mau gosto só some qu
 
 | Status ao salvar o grito | Quer dizer |
 |---|---|
-| **400** | Endereço inválido, ou um link do YouTube (ele abre uma **página**, não um arquivo) |
+| **400** | Endereço inválido, arquivo vazio, ou um link do YouTube (ele abre uma **página**, não um arquivo) |
 | **403** | Endereço dentro da rede da escola (bloqueado por segurança), ou o professor bloqueou o seu grito |
-| **413** | Arquivo maior que 500 KB |
-| **415** | Não é um áudio de verdade (mp3, wav ou ogg) |
+| **413** | Arquivo maior que 500 KB (no link; o arquivo do PC o app já barra antes de mandar) |
+| **415** | Não é um áudio de verdade (mp3, wav ou ogg), conferido pelos primeiros bytes |
 | **429** | Calma: espere 10 s para trocar de novo |
 | **502** | O servidor não conseguiu baixar (sem internet, site fora do ar) |
 
@@ -473,7 +481,7 @@ explicação daquela tela: para que serve, como usar passo a passo e dicas. O gu
 | Caça às Esferas | **User-Agent**, **cabeçalhos**, **query string**, **400 × 403 × 404 × 409 × 429**, **broadcast × unicast**, **curl** | Uma esfera para cada conceito: veja a tabela e o gabarito na seção 4 |
 | Mapa do radar (esfera 4) | **Um cliente HTTP é só um programa que monta a URL** | Cada clique no mapa mostra o `GET /esferas/radar?cacador=7&x=5&y=5` que ele mandou: o mesmo que o aluno digitaria no navegador |
 | Conquista de Territórios | **Concorrência** e **trava** (*lock*), **estado no servidor**, **polling incremental** (`?depois=<id>`), **403 × 404 × 409 × 429** | Dois alunos clicam juntos no mesmo planeta: o servidor deixa só um passar e o outro recebe 409. O Guardião defende mesmo com o app do dono fechado, porque quem decide é o servidor |
-| Grito de Guerra | **Proxy**, **SSRF**, **IP público × privado** (`192.168…`, `127.0.0.1`), **redirecionamento (3xx)**, **tipo de arquivo pelos bytes × extensão**, **limites (413)**, **415**, **502**, **cache** | O servidor baixa o áudio para o aluno e recusa endereços de dentro da rede; um `.mp3` falso é pego pelos primeiros bytes; os apps guardam os áudios da turma antes da hora (pré-carregamento) |
+| Grito de Guerra | **Upload** (o arquivo no corpo do POST, `Content-Type`, `Content-Length`), **proxy**, **SSRF**, **IP público × privado** (`192.168…`, `127.0.0.1`), **redirecionamento (3xx)**, **tipo de arquivo pelos bytes × extensão**, **limites (413)**, **415**, **502**, **cache** | O 📁 manda o arquivo inteiro num `POST` (em "Pedidos ao vivo" aparece o tamanho); o link é baixado pelo servidor, que recusa endereços de dentro da rede; um `.mp3` falso é pego pelos primeiros bytes; os apps guardam os áudios da turma antes da hora (pré-carregamento) |
 | Modo demonstração | **Loopback (127.0.0.1)**, **token** (uma senha sorteada), **isolamento** | O servidor sabe que o pedido veio do próprio PC; em "Pedidos ao vivo", os pedidos do ensaio aparecem marcados com 🎓 |
 | Sons em qualquer tela | **Polling** econômico | O `/turma/sala` (já perguntado a cada 1,5 s) traz só um número ("último evento"); o app só busca `/gritos/eventos` quando ele muda |
 
@@ -501,6 +509,7 @@ explicação daquela tela: para que serve, como usar passo a passo e dicas. O gu
 | `POST /conquista/guardiao` · `POST /conquista/invadir` | Escolher o Guardião (`{"personagem"}`) · invadir (`{"territorio", "personagem"}` → `{"partida": "cq-..."}`); 403/404/409/429 |
 | `GET /turma/partida/cq-...` · `POST .../transformar` · `.../desistir` | A luta da invasão, pela **mesma** rota dos duelos (não vai para o placar da turma) |
 | `GET /gritos/meu` · `POST /gritos/meu` | O meu grito · trocar (`{"frase", "url"}`, o servidor baixa a URL) ou `{"padrao": true}`; 400/403/413/415/429/502 |
+| `POST /gritos/audio?frase=...` | Um áudio do PC do aluno: o arquivo inteiro no corpo (`Content-Type: audio/mpeg`, `audio/wav` ou `audio/ogg`; até 500 KB); 400/403/413/415/429 |
 | `GET /gritos/eventos?depois=<id>` | Os eventos de som novos e a lista de áudios da turma para pré-carregar |
 | `GET /gritos/<hash>.mp3` · `GET /gritos/padrao.wav` | Os áudios (o padrão é gerado pelo programa) |
 | Cabeçalho `X-Demo` | Só no modo demonstração, só aceito vindo de 127.0.0.1 com o token certo (seção 7) |
@@ -545,7 +554,9 @@ bloquear gritos e ligar o modo demonstração **não têm rota**: só existem no
 | **Conquista:** "Calma! Espere ... s para invadir de novo" (429) | A espera entre invasões | Esperar. O professor ajusta a espera no painel |
 | **Conquista:** o aluno não tem planeta | Ele chegou depois da largada | É normal: ele começa invadindo um planeta neutro (cinza) |
 | **Conquista:** a tela diz "Este servidor não tem a Conquista de Territórios" | O PC do professor está com uma versão antiga | Instale a 2.4 no PC do professor |
-| **Grito:** "Link do YouTube não vale" (400) | O YouTube abre uma página, não um arquivo de áudio | Usar o link direto de um `.mp3`, `.wav` ou `.ogg` (o endereço termina no arquivo) |
+| **Grito:** "Link do YouTube não vale" (400) | O YouTube abre uma página, não um arquivo de áudio | Usar **📁 Arquivo do PC** (um `.mp3`, `.wav` ou `.ogg`) ou o link direto de um arquivo (o endereço termina no arquivo) |
+| **Grito:** "O arquivo tem ... KB e o limite é 500 KB" | O áudio escolhido no 📁 é grande demais | Cortar o áudio (5 a 6 s bastam) ou salvar em `.mp3`, que fica bem menor que o `.wav` |
+| **Grito:** a janela do 📁 não mostra o meu arquivo | Ela só mostra `.mp3`, `.wav` e `.ogg` | Converter o áudio para um desses formatos (`.m4a`, `.wma`, vídeos etc. não tocam) |
 | **Grito:** "...aponta para dentro da rede... bloqueado por segurança" (403) | O link é de um computador da escola (ou do próprio servidor) | É a proteção contra SSRF. Usar um link da internet |
 | **Grito:** "Isso não é um áudio mp3, wav ou ogg" (415) ou "O arquivo passa de 500 KB" (413) | O arquivo não é mp3/wav/ogg de verdade, ou passa de 500 KB | Converter ou cortar o áudio (5 a 6 s bastam) |
 | **Grito:** "Não achei esse endereço..." (502) | O PC do professor está sem internet, ou o site está fora do ar | Usar só a frase (o som padrão toca) |
@@ -570,7 +581,7 @@ python main.py                         aplicativo do aluno
 python main.py --servidor              servidor + painel
 python main.py --servidor --sem-janela servidor só no terminal
 python main.py --fumaca [--conectar IP:PORTA]
-python tests/rodar_testes.py           122 testes (sem internet; o servidor de teste usa 127.0.0.1)
+python tests/rodar_testes.py           126 testes (sem internet; o servidor de teste usa 127.0.0.1)
 python ferramentas/simular_cacada.py --conectar IP:PORTA       alunos falsos para ensaiar a caçada
 python ferramentas/simular_conquista.py --conectar IP:PORTA    alunos falsos para ensaiar a Conquista
 ```
@@ -579,7 +590,7 @@ python ferramentas/simular_conquista.py --conectar IP:PORTA    alunos falsos par
 
 ```
 pip install -r requirements.txt -r requirements-dev.txt     (com um Python de python.org, não o da Microsoft Store)
-python instalador/construir.py        ->  dist_instalador\DragonBallDex-Setup-2.4.0.exe  e  DragonBallDex-Portatil.exe
+python instalador/construir.py        ->  dist_instalador\DragonBallDex-Setup-2.4.1.exe  e  DragonBallDex-Portatil.exe
 ```
 
 | Pasta | Conteúdo |
@@ -596,11 +607,10 @@ python instalador/construir.py        ->  dist_instalador\DragonBallDex-Setup-2.
 | `arquivo_versao_aulas.zip` | A versão anterior (roteiro de aulas, terminal + janelas), guardada |
 
 **Imagens do README** (`docs/imagens/`). Novas na 2.4, já no repositório: `radar_mapa.png`, `conquista_aluno.png`,
-`invasao.png`, `painel_conquista.png`, `telao_conquista.png`, `painel_gritos.png`, `demo_app.png` e
-`painel_demo.png`. **Prints que ainda faltam** (os lugares já estão marcados no README como comentário `previsto:`):
+`invasao.png`, `painel_conquista.png`, `telao_conquista.png`, `painel_gritos.png`, `demo_app.png`,
+`painel_demo.png` e (2.4.1) `grito_aluno.png`. **Prints que ainda faltam** (o lugar já está marcado no README como
+comentário `previsto:`):
 
-- `docs/imagens/grito_aluno.png`: o cartão "📣 Seu grito de guerra" com um áudio salvo (🎵) e uma mensagem de erro
-  (ex.: o 415 de um arquivo falso);
 - `docs/imagens/som_aluno.png`: a janela 🔊 do app e o aviso "📣 Fulano conquistou..." no rodapé de outra tela;
 - (opcional) uma foto do laboratório com o telão da Conquista e os alunos jogando.
 
@@ -617,6 +627,7 @@ O código está em [github.com/DiegoSousaOliveira/app_dragonball_api](https://gi
 | `cacada-esferas` · `v2.3.1` | Igual à 2.3.0, mas o efeito usa a figura `interface/imagens/shenlong.png` quando ela está no PC |
 | `cacada-esferas` · `v2.3.2` | A 2.3.1 + o guia **❔ Como funciona?** em todas as telas do app do aluno |
 | `conquista-territorios` · `v2.4.0` | A 2.3.2 + **Conquista de Territórios**, **mapa do radar** (esfera 4), **Grito de Guerra** e **Modo demonstração** |
+| `conquista-territorios` · `v2.4.1` | A 2.4.0 + o grito de guerra aceita **📁 um arquivo de áudio do próprio PC** (o YouTube continua fora) |
 
 ```
 git checkout main                     volta para a versão estável (2.2)
